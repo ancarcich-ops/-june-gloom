@@ -1,5 +1,7 @@
 # June Gloom ☁️
 
+[![CI](https://github.com/ancarcich-ops/june-gloom/actions/workflows/ci.yml/badge.svg)](https://github.com/ancarcich-ops/june-gloom/actions/workflows/ci.yml)
+
 Analyzing **June Gloom** — the persistent late-spring/early-summer marine layer
 that blankets coastal Southern California in low clouds and fog, often burning
 off by afternoon ("night and morning low clouds").
