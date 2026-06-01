@@ -16,6 +16,9 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
+# Generated site (built fresh by GitHub Actions, deployed to Pages)
+docs/
+
 # OS / editor
 .DS_Store
 .vscode/

@@ -1,6 +1,9 @@
 # June Gloom ☁️
 
-[![CI](https://github.com/ancarcich-ops/june-gloom/actions/workflows/ci.yml/badge.svg)](https://github.com/ancarcich-ops/june-gloom/actions/workflows/ci.yml)
+[![CI](https://github.com/ancarcich-ops/-june-gloom/actions/workflows/ci.yml/badge.svg)](https://github.com/ancarcich-ops/-june-gloom/actions/workflows/ci.yml)
+
+📊 **Live site:** https://ancarcich-ops.github.io/-june-gloom/ — charts, findings,
+and downloadable data, rebuilt weekly by GitHub Actions.
 
 Analyzing **June Gloom** — the persistent late-spring/early-summer marine layer
 that blankets coastal Southern California in low clouds and fog, often burning
