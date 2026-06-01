@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   schedule:
-    # Rebuild weekly (Mondays 13:00 UTC) so the site stays fresh.
+    # Every day during June (~6 AM Pacific) so the live tracker stays current.
+    - cron: "0 13 * 6 *"
+    # Weekly the rest of the year to refresh the historical view.
     - cron: "0 13 * * 1"
   workflow_dispatch:
 

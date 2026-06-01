@@ -10,6 +10,10 @@ import requests
 import pandas as pd
 
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+# The forecast endpoint serves recent *actuals* (via past_days) plus a short
+# forecast -- used for tracking the current, in-progress season because the
+# archive endpoint lags a few days behind real time.
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 
 # A handful of representative Southern California coastal (and one inland)
 # locations. lat/lon are approximate.
@@ -78,3 +82,51 @@ def fetch_hourly_clouds(
 def fetch_june(station: str, year: int) -> pd.DataFrame:
     """Convenience wrapper: fetch all of June for a given year."""
     return fetch_hourly_clouds(station, f"{year}-06-01", f"{year}-06-30")
+
+
+def fetch_recent_clouds(
+    station: str,
+    past_days: int = 31,
+    forecast_days: int = 3,
+    timezone: str = "America/Los_Angeles",
+) -> pd.DataFrame:
+    """Fetch recent *actual* + short-forecast hourly cloud cover.
+
+    Unlike :func:`fetch_hourly_clouds` (archive, lags a few days), this uses the
+    forecast endpoint so it includes today and the next few days -- the data we
+    need to track the current, in-progress June.
+
+    Returns the same columns as :func:`fetch_hourly_clouds` plus an
+    ``is_forecast`` boolean marking hours at or after the current local hour.
+    """
+    if station not in STATIONS:
+        raise KeyError(
+            f"Unknown station {station!r}. Options: {', '.join(STATIONS)}"
+        )
+
+    coords = STATIONS[station]
+    params = {
+        "latitude": coords["lat"],
+        "longitude": coords["lon"],
+        "hourly": "cloud_cover",
+        "past_days": past_days,
+        "forecast_days": forecast_days,
+        "timezone": timezone,
+    }
+
+    resp = requests.get(FORECAST_URL, params=params, timeout=60)
+    resp.raise_for_status()
+    hourly = resp.json()["hourly"]
+
+    df = pd.DataFrame(
+        {
+            "time": pd.to_datetime(hourly["time"]),
+            "cloud_cover": hourly["cloud_cover"],
+        }
+    )
+    df["station"] = station
+    now = pd.Timestamp.now(tz=timezone).tz_localize(None)
+    df["is_forecast"] = df["time"] >= now.floor("h")
+    # Cloud cover can be missing for the very latest hours; drop those rows.
+    df = df.dropna(subset=["cloud_cover"]).reset_index(drop=True)
+    return df

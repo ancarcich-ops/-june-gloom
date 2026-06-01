@@ -30,7 +30,11 @@ import matplotlib.pyplot as plt
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from june_gloom.fetch import fetch_june, STATIONS  # noqa: E402
+from june_gloom.fetch import (  # noqa: E402
+    fetch_june,
+    fetch_recent_clouds,
+    STATIONS,
+)
 from june_gloom import analyze, plots  # noqa: E402
 
 STATIONS_TO_USE = ["santa_monica", "san_diego", "riverside_inland"]
@@ -87,6 +91,54 @@ def gather() -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)
 
 
+def _sample_recent() -> pd.DataFrame:
+    """Synthetic recent data for offline testing of the season tracker."""
+    import numpy as np
+
+    rng = np.random.default_rng(7)
+    today = dt.date.today()
+    start = dt.date(today.year, 6, 1)
+    rows = []
+    for station in STATIONS_TO_USE:
+        base = 25 if "inland" in station else 75
+        day = start
+        while day <= today + dt.timedelta(days=3):
+            for hour in range(24):
+                morning = hour < 12
+                mean = base + (15 if morning else -25)
+                cloud = float(min(100, max(0, rng.normal(mean, 20))))
+                ts = pd.Timestamp(day.year, day.month, day.day, hour)
+                rows.append((ts, cloud, station, day > today))
+            day += dt.timedelta(days=1)
+    return pd.DataFrame(
+        rows, columns=["time", "cloud_cover", "station", "is_forecast"]
+    )
+
+
+def gather_recent() -> pd.DataFrame:
+    """Recent actual + short-forecast data for the current-season tracker."""
+    if os.environ.get("JUNE_GLOOM_SAMPLE") == "1":
+        return _sample_recent()
+
+    today = dt.date.today()
+    # Reach back to June 1 of the current year (clamped to the API's 92-day max).
+    past_days = min(max((today - dt.date(today.year, 6, 1)).days + 1, 1), 92)
+    frames = []
+    for station in STATIONS_TO_USE:
+        try:
+            frames.append(
+                fetch_recent_clouds(station, past_days=past_days, forecast_days=3)
+            )
+            print(f"  fetched recent {station}")
+        except Exception as exc:
+            print(f"  WARN: recent {station}: {exc}")
+    if not frames:
+        return pd.DataFrame(
+            columns=["time", "cloud_cover", "station", "is_forecast"]
+        )
+    return pd.concat(frames, ignore_index=True)
+
+
 # --------------------------------------------------------------------------- #
 # HTML rendering
 # --------------------------------------------------------------------------- #
@@ -94,7 +146,139 @@ def _nice(station: str) -> str:
     return station.replace("_", " ").title()
 
 
-def render_html(by_year: pd.DataFrame, burn_off: pd.DataFrame) -> str:
+def _cell(status: str, day: int) -> str:
+    """One calendar cell. status in gloomy/clear/fc_gloomy/fc_clear/none."""
+    styles = {
+        "gloomy": ("#6b7c8c", "#fff", "", "☁"),
+        "clear": ("#f4c95d", "#5b4a1a", "", "☀"),
+        "fc_gloomy": ("#aeb9c4", "#2b3742", "dashed", "☁"),
+        "fc_clear": ("#f7e2a6", "#5b4a1a", "dashed", "☀"),
+        "none": ("#eef2f6", "#aab4be", "", ""),
+    }
+    bg, fg, border, glyph = styles[status]
+    bd = f"border:1px dashed #8a97a3;" if border else ""
+    return (
+        f'<td title="June {day}" style="background:{bg};color:{fg};{bd}'
+        f'width:26px;height:30px;text-align:center;font-size:.8rem;'
+        f'border-radius:5px;">{day}<br><span style="font-size:.7rem">'
+        f"{glyph}</span></td>"
+    )
+
+
+def render_season(df_recent: pd.DataFrame) -> str:
+    """Build the 'current June, live' tracker card."""
+    today = dt.date.today()
+    year = today.year
+
+    times = pd.to_datetime(df_recent["time"]) if len(df_recent) else df_recent
+    june = (
+        df_recent[(times.dt.year == year) & (times.dt.month == 6)]
+        if len(df_recent)
+        else df_recent
+    )
+    if len(june) == 0:
+        return (
+            '<div class="card"><h2>June ' + str(year) + " — live tracker</h2>"
+            "<p class=\"muted\">No current-season data yet. This section fills "
+            "in once June begins and the daily build runs.</p></div>"
+        )
+
+    actual = june[~june["is_forecast"]]
+    forecast = june[june["is_forecast"]]
+
+    daily_actual = (
+        analyze.daily_gloom_summary(actual) if len(actual) else pd.DataFrame()
+    )
+    daily_fc = (
+        analyze.daily_gloom_summary(forecast)
+        if len(forecast)
+        else pd.DataFrame()
+    )
+
+    # (station, day) -> status
+    status: dict[tuple[str, int], str] = {}
+    for _, r in daily_actual.iterrows():
+        d = pd.Timestamp(r["date"]).day
+        status[(r["station"], d)] = "gloomy" if r["gloomy_day"] else "clear"
+    for _, r in daily_fc.iterrows():
+        d = pd.Timestamp(r["date"]).day
+        key = (r["station"], d)
+        if key not in status:  # don't overwrite an actual with a forecast
+            status[key] = "fc_gloomy" if r["gloomy_day"] else "fc_clear"
+
+    burn = analyze.burn_off_hour(actual) if len(actual) else pd.DataFrame()
+    burn_today = {}
+    if len(burn):
+        tmask = pd.to_datetime(burn["date"]).dt.date == today
+        for _, r in burn[tmask].iterrows():
+            burn_today[r["station"]] = r["burn_off_hour"]
+
+    # Per-station summary lines + calendar rows
+    summary_lines = []
+    grid_rows = ""
+    for station in STATIONS_TO_USE:
+        st_days = daily_actual[daily_actual["station"] == station] if len(
+            daily_actual
+        ) else pd.DataFrame()
+        gloomy_so_far = int(st_days["gloomy_day"].sum()) if len(st_days) else 0
+        elapsed = int(st_days["date"].nunique()) if len(st_days) else 0
+        todays = status.get((station, today.day))
+        today_txt = {
+            "gloomy": "☁ gloomy",
+            "clear": "☀ clear",
+            None: "—",
+        }.get(todays, "—")
+        bt = burn_today.get(station)
+        if todays == "gloomy":
+            burn_txt = (
+                f" · burned off ~{bt:.0f}:00"
+                if bt is not None and pd.notna(bt)
+                else " · hadn't cleared yet"
+            )
+        else:
+            burn_txt = ""
+        summary_lines.append(
+            f"<li><strong>{_nice(station)}</strong>: "
+            f"{gloomy_so_far}/{elapsed} gloomy mornings so far · "
+            f"today {today_txt}{burn_txt}</li>"
+        )
+
+        cells = "".join(
+            _cell(status.get((station, d), "none"), d) for d in range(1, 31)
+        )
+        grid_rows += (
+            f'<tr><th style="text-align:right;padding-right:.6rem;'
+            f'white-space:nowrap">{_nice(station)}</th>{cells}</tr>'
+        )
+
+    legend = (
+        '<span style="background:#6b7c8c;color:#fff;padding:1px 7px;'
+        'border-radius:4px">☁ gloomy</span> &nbsp; '
+        '<span style="background:#f4c95d;padding:1px 7px;border-radius:4px">'
+        "☀ cleared</span> &nbsp; "
+        '<span style="border:1px dashed #8a97a3;padding:1px 7px;'
+        'border-radius:4px">dashed = forecast</span>'
+    )
+
+    return f"""
+  <div class="card" style="border-top:4px solid var(--accent)">
+    <h2>June {year} — live tracker 🔴</h2>
+    <p class="muted">Updated daily from recent observations (and a 3-day
+    forecast peek). Day {today.day} of 30.</p>
+    <ul class="findings">{''.join(summary_lines)}</ul>
+    <div style="overflow-x:auto">
+      <table style="border-collapse:separate;border-spacing:3px">
+        {grid_rows}
+      </table>
+    </div>
+    <p class="muted" style="margin-top:.6rem">{legend}</p>
+  </div>
+"""
+
+
+def render_html(
+    by_year: pd.DataFrame, burn_off: pd.DataFrame, season_html: str = ""
+) -> str:
     built = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     latest = by_year["year"].max()
 
@@ -178,6 +362,7 @@ def render_html(by_year: pd.DataFrame, burn_off: pd.DataFrame) -> str:
   <p>How grey are Southern California's June mornings, really?</p>
 </header>
 <main>
+  {season_html}
   <div class="card">
     <h2>Key findings</h2>
     <ul class="findings">{findings_html}</ul>
@@ -252,9 +437,14 @@ def main() -> None:
 
     burn_off = analyze.burn_off_hour(recent)
 
+    # Current-season live tracker
+    season_html = render_season(gather_recent())
+
     # Prevent Jekyll from touching the static files
     (DOCS / ".nojekyll").write_text("")
-    (DOCS / "index.html").write_text(render_html(by_year, burn_off))
+    (DOCS / "index.html").write_text(
+        render_html(by_year, burn_off, season_html)
+    )
 
     print(f"Site written to {DOCS}")
 

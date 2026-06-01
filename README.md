@@ -2,8 +2,9 @@
 
 [![CI](https://github.com/ancarcich-ops/-june-gloom/actions/workflows/ci.yml/badge.svg)](https://github.com/ancarcich-ops/-june-gloom/actions/workflows/ci.yml)
 
-📊 **Live site:** https://ancarcich-ops.github.io/-june-gloom/ — charts, findings,
-and downloadable data, rebuilt weekly by GitHub Actions.
+📊 **Live site:** https://ancarcich-ops.github.io/-june-gloom/ — a **live tracker**
+for the current June (updated daily) plus the historical charts, findings, and
+downloadable data. Rebuilt by GitHub Actions.
 
 Analyzing **June Gloom** — the persistent late-spring/early-summer marine layer
 that blankets coastal Southern California in low clouds and fog, often burning
@@ -55,7 +56,9 @@ jupyter lab notebooks/01_explore_june_gloom.ipynb
 - **NOAA NCEI** — Global Historical Climatology Network (GHCN-Daily) and
   Local Climatological Data (LCD) for cloud cover, sky condition, and sunshine.
   https://www.ncei.noaa.gov/
-- **Open-Meteo** — free historical weather API (cloud cover, no API key needed).
+- **Open-Meteo** — free weather API (cloud cover, no API key needed). The
+  *archive* endpoint feeds the historical view; the *forecast* endpoint (recent
+  actuals + short forecast) feeds the current-season live tracker.
   https://open-meteo.com/en/docs/historical-weather-api
 
 Candidate SoCal stations: LAX, Long Beach, Santa Monica, San Diego (Lindbergh),
