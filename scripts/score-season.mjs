@@ -8,8 +8,8 @@
 
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 
-const WINDOW_START = 8;
-const WINDOW_END = 15; // exclusive (8 AM–3 PM beach-hours window)
+const WINDOW_START = 7;
+const WINDOW_END = 12; // exclusive (7 AM–noon burn-off window)
 const SOCKED_THRESHOLD = 50;
 const WEIGHTS = { lowCloud: 0.5, sunless: 0.3, socked: 0.2 };
 const WIN_THRESHOLD = 50;
@@ -106,7 +106,7 @@ async function runYear(year) {
 
   // ---- Markdown report ----
   let md = `# June ${year} — replayed through the current Gloom Index methodology\n\n`;
-  md += `> Source: Open-Meteo archive API · 6 LA+OC beaches · 8 AM–3 PM window · `;
+  md += `> Source: Open-Meteo archive API · 6 LA+OC beaches · 7 AM–noon window · `;
   md += `weights ${WEIGHTS.lowCloud}/${WEIGHTS.sunless}/${WEIGHTS.socked} · win at ${WIN_THRESHOLD}\n\n`;
   md += `## Final score\n\n`;
   md += `| Team | Record (W–L) | Season points |\n|---|---|---|\n`;

@@ -12,11 +12,12 @@ import { laTodayISO, laHour, seasonYear } from "./openMeteo";
 // Tunable constants — the methodology page reads these so docs == reality.
 // --------------------------------------------------------------------------
 
-/** Daytime "beach hours" window: 8 AM through 2 PM local (8 AM–3 PM span). This
- *  skips the pre-dawn marine layer that's almost always gray and instead scores
- *  the hours when the gloom either holds through the day or burns off. */
-export const WINDOW_START = 8;
-export const WINDOW_END = 15; // exclusive (window closes at 3 PM)
+/** Scoring window: 7 AM through 11 AM local (the 7 AM–noon span) — the burn-off
+ *  hours. We skip the always-gray pre-dawn 6 AM hour and the reliably-sunny
+ *  afternoon, leaving the window where the marine layer actually decides whether
+ *  to hold or clear. Calibrated against 5 years so the rivalry is ~50/50. */
+export const WINDOW_START = 7;
+export const WINDOW_END = 12; // exclusive (window closes at noon)
 
 /** Low-cloud cover (%) at or above which an hour counts as "socked in". */
 export const SOCKED_THRESHOLD = 50;
@@ -89,8 +90,8 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
 function statusFor(date: string, today: string, nowHour: number): DayStatus {
   if (date < today) return "final";
   if (date > today) return "upcoming";
-  // Today: the scoring window closes at 3 PM (WINDOW_END), so once it's past
-  // 3 PM PT every window hour is observed and the game is final.
+  // Today: the scoring window closes at noon (WINDOW_END), so once it's past
+  // noon PT every window hour is observed and the game is final.
   return nowHour >= WINDOW_END ? "final" : "live";
 }
 

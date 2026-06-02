@@ -11,8 +11,8 @@ import { STATIONS } from "../lib/openMeteo";
 import { TEAMS } from "../lib/teams";
 
 // A worked example computed with the real constants so the numbers are honest.
-const EX_LOW = [96, 92, 85, 70, 45, 30, 18]; // 8 AM–2 PM low-cloud %
-const EX_SUN = [0, 0, 200, 1800, 2900, 3300, 3500]; // seconds of sun per hour
+const EX_LOW = [95, 90, 80, 55, 30]; // 7–11 AM low-cloud %
+const EX_SUN = [0, 0, 600, 2400, 3200]; // seconds of sun per hour
 const exN = EX_LOW.length;
 const exMean = EX_LOW.reduce((a, b) => a + b, 0) / exN;
 const exSunFrac = EX_SUN.reduce((a, b) => a + b, 0) / (exN * 3600);
@@ -111,17 +111,18 @@ export default function Methodology() {
         </div>
       </Section>
 
-      <Section title="3. The scoring window — beach hours">
+      <Section title="3. The scoring window — the burn-off hours">
         <p>
           June Gloom is a "night &amp; morning low clouds" phenomenon, and the
-          question that matters is whether it burns off in time to enjoy. So we
-          score <strong className="text-white/85">beach hours</strong>:{" "}
+          question each day is whether it burns off. So we score{" "}
           <strong className="text-white/85">
             {fmtHour(WINDOW_START)}–{fmtHour(WINDOW_END)}
-          </strong>
-          . Skipping the pre-dawn hours (which are almost always gray) gives the
-          sun a fair shot at the title. An hour counts as <em>socked in</em> when
-          low-cloud cover is at or above{" "}
+          </strong>{" "}
+          — the burn-off window. We deliberately skip the always-gray pre-dawn
+          hours and the reliably-sunny afternoon: scored against five years of
+          data, this window makes the all-time rivalry essentially a coin flip
+          (≈50/50), so neither team gets a built-in head start. An hour counts as{" "}
+          <em>socked in</em> when low-cloud cover is at or above{" "}
           <strong className="text-white/85">{SOCKED_THRESHOLD}%</strong>.
         </p>
       </Section>
