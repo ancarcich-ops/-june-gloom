@@ -150,7 +150,7 @@ export default function App() {
                   </section>
 
                   <section className="jg-sec">
-                    <SectionHead n="05" title="Hall of Champions" sub="Five seasons, dead even at 75–75. 2026 breaks the tie." />
+                    <SectionHead n="05" title="Hall of Champions" sub="Five seasons in the books — does 2026 tip the balance?" />
                     <HallOfChampions />
                   </section>
                 </>
@@ -179,7 +179,7 @@ export default function App() {
           )}
 
           <footer className="jg-footer">
-            <span>Gloom Index from live morning low-cloud cover · 6 LA &amp; OC beaches · a concept, not a forecast.</span>
+            <span>Gloom Index from live morning low-cloud cover · 7 LA &amp; OC locations · a concept, not a forecast.</span>
             <span>June Gloom Bowl · {season?.year ?? 2026} season</span>
           </footer>
         </div>

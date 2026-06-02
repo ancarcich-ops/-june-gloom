@@ -1,12 +1,14 @@
 import type { Station, StationSeries, HourPoint } from "./types";
 
 /**
- * LA + Orange County coastal panel. These are the marine-layer beaches that
- * decide the June Gloom Bowl — no Santa Barbara, no San Diego.
+ * LA + Orange County panel — the marine-layer beaches that decide the June
+ * Gloom Bowl (no Santa Barbara, no San Diego), plus inland Garden Grove as an
+ * "is the gloom reaching inland?" check. Ordered roughly north → south.
  */
 export const STATIONS: Station[] = [
   { id: "santa_monica", name: "Santa Monica", county: "LA", lat: 34.019, lon: -118.491 },
   { id: "manhattan_beach", name: "Manhattan Beach", county: "LA", lat: 33.885, lon: -118.41 },
+  { id: "garden_grove", name: "Garden Grove", county: "OC", lat: 33.774, lon: -117.941 },
   { id: "long_beach", name: "Long Beach", county: "LA", lat: 33.77, lon: -118.194 },
   { id: "huntington_beach", name: "Huntington Beach", county: "OC", lat: 33.66, lon: -117.999 },
   { id: "newport_beach", name: "Newport Beach", county: "OC", lat: 33.619, lon: -117.929 },

@@ -10,8 +10,9 @@ export function About() {
         “game” between{" "}
         <b style={{ color: TEAMS.dogs.c3 }}>the Big Dogs</b> (the sun) and{" "}
         <b style={{ color: TEAMS.gloom.c3 }}>the Gloom + Grant</b> (the fog). We
-        read <b>live</b> weather for six LA &amp; Orange County beaches, score how
-        socked-in the 7&nbsp;AM–noon window was on a 0–100 <b>Gloom Index</b>, and
+        read <b>live</b> weather for seven LA &amp; OC spots (six beaches plus
+        inland Garden Grove), score how socked-in the 7&nbsp;AM–noon window was on
+        a 0–100 <b>Gloom Index</b>, and
         crown a daily winner. Records, points, streaks and five years of
         history — all from live data, no backend.
       </p>
@@ -22,8 +23,8 @@ export function About() {
           in fog. We give the fog a score from 0 to 100. If it's really foggy, the
           Fog team wins the day. If the sun burns the fog away, the Sun team wins.
           We keep score every single day like a sports league — who won, by how
-          much — and we even did it for the last five years. Right now the two
-          teams are perfectly tied, so this year decides it!
+          much — and we even did it for the last five years. The two teams have
+          been neck and neck, so this season could tip it!
         </p>
       </div>
     </div>
@@ -31,10 +32,10 @@ export function About() {
 }
 
 const steps = [
-  { icon: Ic.Pin, t: "Six beaches", d: "Santa Monica to Laguna — the SoCal marine-layer front line." },
+  { icon: Ic.Pin, t: "Seven spots", d: "Santa Monica to Laguna, plus inland Garden Grove." },
   { icon: Ic.Marine, t: "Morning read", d: "Low-cloud cover, 7 AM–noon, the gloom's home turf." },
-  { icon: Ic.BurnOff, t: "Gloom Index", d: "0 = blue sky, 100 = fully socked in. Scored per beach." },
-  { icon: Ic.Wave, t: "Average the six", d: "The mean across all beaches is the day's final score." },
+  { icon: Ic.BurnOff, t: "Gloom Index", d: "0 = blue sky, 100 = fully socked in. Scored per spot." },
+  { icon: Ic.Wave, t: "Average them all", d: "The mean across every spot is the day's final score." },
   { icon: Ic.Crown, t: "Crown the day", d: "≥ 50 the Gloom holds; < 50 the Dogs burn it off." },
 ];
 

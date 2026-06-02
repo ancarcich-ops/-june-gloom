@@ -8,6 +8,7 @@ import { WIN_THRESHOLD } from "../lib/gloom";
 const ABBR: Record<string, string> = {
   santa_monica: "SMO",
   manhattan_beach: "MNB",
+  garden_grove: "GDG",
   long_beach: "LGB",
   huntington_beach: "HUN",
   newport_beach: "NWP",

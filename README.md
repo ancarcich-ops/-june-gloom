@@ -28,7 +28,7 @@ Index = 0.5 · meanLowCloud
       + 0.2 · pctMorningSocked
 ```
 
-Index ≥ 50 → Gloom wins the day; below → Big Dogs. The six beaches are averaged
+Index ≥ 50 → Gloom wins the day; below → Big Dogs. The seven spots are averaged
 into the official daily score. Full details, thresholds, and a worked example
 live on the in-app **How it works** page.
 
@@ -68,8 +68,8 @@ jupyter lab notebooks/01_explore_june_gloom.ipynb
   low-cloud and sunshine data; the Python library can also use the *archive*
   endpoint for multi-year history. https://open-meteo.com/
 
-Scoreboard panel (LA + Orange County beaches): Santa Monica, Manhattan Beach,
-Long Beach, Huntington Beach, Newport Beach, Laguna Beach.
+Scoreboard panel (LA + Orange County): Santa Monica, Manhattan Beach,
+Long Beach, Huntington Beach, Newport Beach, Laguna Beach, plus inland Garden Grove.
 
 ## License
 
