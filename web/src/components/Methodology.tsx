@@ -200,10 +200,12 @@ export default function Methodology() {
             finished days won by the same team.
           </li>
           <li>
-            Today's game counts toward <strong className="text-white/85">points</strong>{" "}
-            live and updates through the day, but only becomes a{" "}
-            <strong className="text-white/85">win/loss</strong> at midnight
-            Pacific.
+            Before noon, today's game is <strong className="text-white/85">live</strong>{" "}
+            (partly forecast) and counts toward points provisionally. The moment
+            the <strong className="text-white/85">{fmtHour(MORNING_END)}</strong>{" "}
+            window closes, every morning hour is observed, so the game goes{" "}
+            <strong className="text-white/85">final</strong> and lands in the
+            record.
           </li>
         </ul>
       </Section>

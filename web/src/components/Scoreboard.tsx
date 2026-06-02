@@ -143,8 +143,8 @@ export default function Scoreboard({ season }: { season: Season }) {
           )}
           {season.today && (
             <div className="mt-1 text-xs text-white/40">
-              🔴 Game {season.finalsPlayed + 1} live now — today's score counts
-              toward the record once the day finishes (midnight PT).
+              🔴 Game {season.finalsPlayed + 1} live now — today's score locks
+              when the morning window closes at noon PT.
             </div>
           )}
         </div>

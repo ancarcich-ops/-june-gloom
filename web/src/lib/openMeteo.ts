@@ -25,6 +25,16 @@ export function seasonYear(): number {
   return Number(laTodayISO().slice(0, 4));
 }
 
+/** Current hour (0–23) in LA local time. */
+export function laHour(): number {
+  const s = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "2-digit",
+    hour12: false,
+  }).format(new Date());
+  return Number(s) % 24;
+}
+
 function daysSinceJune1(): number {
   const today = new Date(laTodayISO() + "T00:00:00");
   const june1 = new Date(`${today.getFullYear()}-06-01T00:00:00`);

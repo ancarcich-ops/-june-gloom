@@ -6,7 +6,7 @@ import type {
   TeamId,
   DayStatus,
 } from "./types";
-import { laTodayISO, seasonYear } from "./openMeteo";
+import { laTodayISO, laHour, seasonYear } from "./openMeteo";
 
 // --------------------------------------------------------------------------
 // Tunable constants — the methodology page reads these so docs == reality.
@@ -85,10 +85,12 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
   return out;
 }
 
-function statusFor(date: string, today: string): DayStatus {
+function statusFor(date: string, today: string, nowHour: number): DayStatus {
   if (date < today) return "final";
-  if (date === today) return "live";
-  return "upcoming";
+  if (date > today) return "upcoming";
+  // Today: the scoring window closes at noon (MORNING_END), so once it's past
+  // noon PT every morning hour is observed and the game is final.
+  return nowHour >= MORNING_END ? "final" : "live";
 }
 
 // --------------------------------------------------------------------------
@@ -97,6 +99,7 @@ function statusFor(date: string, today: string): DayStatus {
 
 export function buildSeason(allSeries: StationSeries[]): Season {
   const today = laTodayISO();
+  const nowHour = laHour();
   const year = seasonYear();
   const junePrefix = `${year}-06-`;
 
@@ -132,7 +135,7 @@ export function buildSeason(allSeries: StationSeries[]): Season {
       gloomScore,
       dogScore: 100 - gloomScore,
       winner,
-      status: statusFor(date, today),
+      status: statusFor(date, today, nowHour),
       stations,
     });
   }
