@@ -1,7 +1,14 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import type { Season, TeamId } from "../lib/types";
 import { TEAMS } from "../lib/teams";
+import { celebrate } from "../lib/confetti";
 import Count from "./Count";
+
+const CONFETTI: Record<TeamId, string[]> = {
+  gloom: [TEAMS.gloom.accent, "#c3d0de", "#ffffff", "#4f6076"],
+  dogs: [TEAMS.dogs.accent, "#fde68a", "#ffffff", "#ea580c"],
+};
 
 function TeamPanel({
   team,
@@ -87,11 +94,33 @@ export default function Scoreboard({ season }: { season: Season }) {
   const diff = Math.abs(season.gloomPoints - season.dogPoints);
   const leader = gLead ? TEAMS.gloom : dLead ? TEAMS.dogs : null;
 
+  // Celebrate the day's winner once, as soon as today's game is final.
+  const fired = useRef(false);
+  useEffect(() => {
+    const g = season.todaysGame;
+    if (!fired.current && g && g.status === "final") {
+      fired.current = true;
+      celebrate(CONFETTI[g.winner]);
+    }
+  }, [season.todaysGame]);
+
+  const replay = () => {
+    const g = season.todaysGame;
+    const team = g && g.status === "final" ? g.winner : leader?.id;
+    if (team) celebrate(CONFETTI[team]);
+  };
+
   return (
     <section className="mx-auto w-full max-w-4xl">
       <div className="card-glass rounded-3xl p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between text-[11px] uppercase tracking-[0.25em] text-white/45">
-          <span>🏆 June Gloom Bowl · {season.year}</span>
+          <button
+            onClick={replay}
+            title="Replay celebration"
+            className="transition-colors hover:text-white/80"
+          >
+            🏆 June Gloom Bowl · {season.year}
+          </button>
           <span>
             {season.finalsPlayed} final
             {season.today ? " · 1 live" : ""}

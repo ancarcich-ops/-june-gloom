@@ -175,11 +175,13 @@ export function buildSeason(allSeries: StationSeries[]): Season {
   }
 
   const today_ = days.find((d) => d.status === "live") ?? null;
+  const todaysGame = days.find((d) => d.date === today) ?? null;
 
   return {
     year,
     days,
     today: today_,
+    todaysGame,
     gloomWins,
     dogWins,
     gloomPoints,

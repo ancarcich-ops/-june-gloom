@@ -48,7 +48,8 @@ export interface DayResult {
 export interface Season {
   year: number;
   days: DayResult[]; // June 1 .. (today + forecast)
-  today: DayResult | null;
+  today: DayResult | null; // today's game only while it's still live
+  todaysGame: DayResult | null; // today's game whether live or final
   gloomWins: number;
   dogWins: number;
   gloomPoints: number; // cumulative over FINAL games
