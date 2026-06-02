@@ -1,183 +1,120 @@
-import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import type { Season, TeamId } from "../lib/types";
 import { TEAMS } from "../lib/teams";
-import { celebrate } from "../lib/confetti";
+import { Crest, Ic, type CrestVariant } from "./icons";
 import Count from "./Count";
 
-const CONFETTI: Record<TeamId, string[]> = {
-  gloom: [TEAMS.gloom.accent, "#c3d0de", "#ffffff", "#4f6076"],
-  dogs: [TEAMS.dogs.accent, "#fde68a", "#ffffff", "#ea580c"],
-};
-
 function TeamPanel({
-  team,
-  points,
-  wins,
-  losses,
-  leading,
-  align,
+  teamId,
+  pts,
+  rec,
+  crown,
+  streak,
+  crest,
+  run,
 }: {
-  team: TeamId;
-  points: number;
-  wins: number;
-  losses: number;
-  leading: boolean;
-  align: "left" | "right";
+  teamId: TeamId;
+  pts: number;
+  rec: string;
+  crown: boolean;
+  streak: string | null;
+  crest: CrestVariant;
+  run: boolean;
 }) {
-  const t = TEAMS[team];
+  const t = TEAMS[teamId];
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 120, damping: 16 }}
-      className={`relative flex-1 rounded-2xl bg-gradient-to-b ${t.gradFrom} ${t.gradTo} p-5 sm:p-7 ${
-        align === "right" ? "text-right" : "text-left"
-      }`}
-      style={
-        leading
-          ? { boxShadow: `0 0 0 1px ${t.accent}55, 0 0 60px ${t.glow}` }
-          : { boxShadow: "0 0 0 1px rgba(255,255,255,0.06)" }
-      }
-    >
-      <div
-        className={`flex items-center gap-2 ${
-          align === "right" ? "justify-end" : "justify-start"
-        }`}
-      >
-        <span className="text-3xl sm:text-4xl" aria-hidden>
-          {t.emoji}
-        </span>
-        <div className={align === "right" ? "text-right" : "text-left"}>
-          <div className={`font-display font-bold leading-tight ${t.text}`}>
-            {t.name}
-          </div>
-          <div className="text-[11px] uppercase tracking-widest text-white/40">
-            {t.tagline}
-          </div>
+    <div className={`jb-team ${teamId}`}>
+      <div className="glow" style={{ background: t.glow }} />
+      <div className="col col-id">
+        <div className="jb-crest"><Crest team={teamId} variant={crest} size={104} /></div>
+        <div>
+          <div className="jb-name">{t.name}</div>
+          <div className="jb-who">{t.who} · {t.tagline}</div>
         </div>
       </div>
-
-      <div className="mt-3 led text-6xl sm:text-7xl font-extrabold text-white">
-        <Count value={points} />
+      <div className="col col-pts">
+        <Count className="jb-pts led" value={pts} run={run} style={{ color: t.c3 }} />
+        <div className="jb-rec">
+          <span className="jb-recpill" style={{ color: t.c3 }}>{rec}</span>
+          {crown && (
+            <span className="jb-crown" style={{ background: t.glow, color: teamId === "dogs" ? "#7a4d06" : "#2b3a52" }}>
+              <Ic.Crown width="13" height="13" /> Lead
+            </span>
+          )}
+          {streak && (
+            <span className="jb-streak" style={{ color: t.c3 }}>
+              <Ic.Flame width="12" height="12" />{streak}
+            </span>
+          )}
+        </div>
       </div>
-
-      <div
-        className={`mt-1 flex items-center gap-3 text-sm text-white/60 ${
-          align === "right" ? "justify-end" : "justify-start"
-        }`}
-      >
-        <span className="led font-bold text-white/80">
-          {wins}–{losses}
-        </span>
-        <span className="uppercase tracking-wider text-[11px]">record</span>
-      </div>
-
-      {leading && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className={`absolute -top-3 ${
-            align === "right" ? "right-4" : "left-4"
-          } rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-900`}
-        >
-          👑 Leading
-        </motion.div>
-      )}
-    </motion.div>
+    </div>
   );
 }
 
-export default function Scoreboard({ season }: { season: Season }) {
-  const gLead = season.gloomPoints > season.dogPoints;
-  const dLead = season.dogPoints > season.gloomPoints;
-  const diff = Math.abs(season.gloomPoints - season.dogPoints);
-  const leader = gLead ? TEAMS.gloom : dLead ? TEAMS.dogs : null;
+export default function Scoreboard({
+  season,
+  crest,
+  run,
+}: {
+  season: Season;
+  crest: CrestVariant;
+  run: boolean;
+}) {
+  const { gloomWins: gW, dogWins: dW, gloomPoints: gP, dogPoints: dP } = season;
+  const leader: TeamId | null = gW === dW ? null : gW > dW ? "gloom" : "dogs";
+  const totalW = gW + dW;
+  const gloomShare = totalW > 0 ? (gW / totalW) * 100 : 50;
+  const streakLabel = season.streakLen > 0 ? `W${season.streakLen}` : null;
 
-  // Celebrate the day's winner once, as soon as today's game is final.
-  const fired = useRef(false);
-  useEffect(() => {
-    const g = season.todaysGame;
-    if (!fired.current && g && g.status === "final") {
-      fired.current = true;
-      celebrate(CONFETTI[g.winner]);
-    }
-  }, [season.todaysGame]);
-
-  const replay = () => {
-    const g = season.todaysGame;
-    const team = g && g.status === "final" ? g.winner : leader?.id;
-    if (team) celebrate(CONFETTI[team]);
-  };
+  const dayNum = season.todaysGame?.dayOfMonth ?? season.finalsPlayed;
+  const live = !!season.today;
 
   return (
-    <section className="mx-auto w-full max-w-4xl">
-      <div className="card-glass rounded-3xl p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between text-[11px] uppercase tracking-[0.25em] text-white/45">
-          <button
-            onClick={replay}
-            title="Replay celebration"
-            className="transition-colors hover:text-white/80"
-          >
-            🏆 June Gloom Bowl · {season.year}
-          </button>
-          <span>
-            {season.finalsPlayed} final
-            {season.today ? " · 1 live" : ""}
-          </span>
+    <div className="jg-card solid jb jg-rise">
+      <div className="jb-strip">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span className="jg-eyebrow">{season.year} Season</span>
+          <span className="jb-daychip">Day {dayNum} of 30</span>
         </div>
+        {live && <span className="jg-live"><span className="dot" />Live now</span>}
+      </div>
 
-        <div className="flex items-stretch gap-3 sm:gap-5">
-          <TeamPanel
-            team="dogs"
-            points={season.dogPoints}
-            wins={season.dogWins}
-            losses={season.gloomWins}
-            leading={dLead}
-            align="left"
-          />
-
-          <div className="flex flex-col items-center justify-center px-1">
-            <span className="led text-xl font-bold text-white/30">VS</span>
-          </div>
-
-          <TeamPanel
-            team="gloom"
-            points={season.gloomPoints}
-            wins={season.gloomWins}
-            losses={season.dogWins}
-            leading={gLead}
-            align="right"
-          />
+      <div className="jb-grid">
+        <TeamPanel
+          teamId="dogs"
+          pts={dP}
+          rec={`${dW}–${gW}`}
+          crown={leader === "dogs"}
+          streak={season.streakTeam === "dogs" ? streakLabel : null}
+          crest={crest}
+          run={run}
+        />
+        <div className="jb-center">
+          <div className="jb-vs">VS</div>
+          <div className="jb-daychip">Season series</div>
         </div>
+        <TeamPanel
+          teamId="gloom"
+          pts={gP}
+          rec={`${gW}–${dW}`}
+          crown={leader === "gloom"}
+          streak={season.streakTeam === "gloom" ? streakLabel : null}
+          crest={crest}
+          run={run}
+        />
+      </div>
 
-        <div className="mt-4 text-center text-sm text-white/55">
-          {leader ? (
-            <span>
-              <span className="font-semibold text-white/80">
-                {leader.short}
-              </span>{" "}
-              lead by <span className="led font-bold">{diff}</span> points
-              {season.streakTeam && season.streakLen > 1 && (
-                <>
-                  {" · "}
-                  {TEAMS[season.streakTeam].short} on a{" "}
-                  <span className="led font-bold">{season.streakLen}</span>-game
-                  streak {TEAMS[season.streakTeam].emoji}
-                </>
-              )}
-            </span>
-          ) : (
-            <span>All square. 🤝</span>
-          )}
-          {season.today && (
-            <div className="mt-1 text-xs text-white/40">
-              🔴 Game {season.finalsPlayed + 1} live now — today's score locks
-              when the scoring window closes at noon PT.
-            </div>
-          )}
+      <div className="jb-series">
+        <div className="jb-series-lbls">
+          <span style={{ color: TEAMS.dogs.c3 }}>Big Dogs · {dW}</span>
+          <span style={{ color: TEAMS.gloom.c3 }}>{gW} · Gloom</span>
+        </div>
+        <div className="jg-tug">
+          <i style={{ left: 0, width: `${100 - gloomShare}%`, background: `linear-gradient(90deg, ${TEAMS.dogs.c4}, ${TEAMS.dogs.c2})` }} />
+          <i style={{ left: "auto", right: 0, width: `${gloomShare}%`, background: `linear-gradient(90deg, ${TEAMS.gloom.c3}, ${TEAMS.gloom.c4})` }} />
+          <span className="mid" />
         </div>
       </div>
-    </section>
+    </div>
   );
 }

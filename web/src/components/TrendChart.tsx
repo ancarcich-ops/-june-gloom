@@ -1,81 +1,48 @@
 import type { Season } from "../lib/types";
 import { TEAMS } from "../lib/teams";
-import { WIN_THRESHOLD } from "../lib/gloom";
 
-/**
- * Lightweight inline-SVG sparkline of the daily coastal Gloom Index across the
- * season. No charting dependency — just a path with a 50-line baseline.
- */
 export default function TrendChart({ season }: { season: Season }) {
   const days = season.days.filter((d) => d.status !== "upcoming");
   if (days.length < 2) return null;
 
-  const W = 720;
-  const H = 180;
-  const padX = 8;
-  const padY = 16;
-  const n = days.length;
-
-  const x = (i: number) => padX + (i * (W - 2 * padX)) / Math.max(n - 1, 1);
-  const y = (v: number) => padY + ((100 - v) * (H - 2 * padY)) / 100;
-
-  const pts = days.map((d, i) => `${x(i)},${y(d.gloomIndex)}`);
-  const line = `M ${pts.join(" L ")}`;
-  const area = `${line} L ${x(n - 1)},${H - padY} L ${x(0)},${H - padY} Z`;
-  const midY = y(WIN_THRESHOLD);
+  const W = 100, H = 46, pad = 4;
+  const pts = days.map((d, i) => {
+    const x = pad + (i / (days.length - 1)) * (W - pad * 2);
+    const y = pad + (1 - d.gloomIndex / 100) * (H - pad * 2);
+    return { x, y, index: d.gloomIndex, live: d.status === "live" };
+  });
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
+  const midY = pad + 0.5 * (H - pad * 2);
+  const areaGloom = `${line} L${pts[pts.length - 1].x} ${midY} L${pts[0].x} ${midY} Z`;
+  const live = pts[pts.length - 1];
 
   return (
-    <section className="mx-auto mt-6 w-full max-w-4xl">
-      <div className="card-glass rounded-3xl p-5 sm:p-6">
-        <h2 className="mb-1 font-display text-lg font-semibold text-white/90">
-          Gloom Index Trend
-        </h2>
-        <p className="mb-3 text-xs text-white/45">
-          Daily coastal index. Above the line is {TEAMS.gloom.short} territory,
-          below is {TEAMS.dogs.short}.
-        </p>
-
-        <svg
-          viewBox={`0 0 ${W} ${H}`}
-          className="w-full"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="gloomFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={TEAMS.gloom.accent} stopOpacity="0.35" />
-              <stop offset="100%" stopColor={TEAMS.gloom.accent} stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          {/* 50-line */}
-          <line
-            x1={padX}
-            x2={W - padX}
-            y1={midY}
-            y2={midY}
-            stroke="rgba(255,255,255,0.25)"
-            strokeDasharray="4 4"
-          />
-          <path d={area} fill="url(#gloomFill)" />
-          <path
-            d={line}
-            fill="none"
-            stroke={TEAMS.gloom.accent}
-            strokeWidth={2.5}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          {days.map((d, i) => (
-            <circle
-              key={d.date}
-              cx={x(i)}
-              cy={y(d.gloomIndex)}
-              r={2.5}
-              fill={TEAMS[d.winner].accent}
-            />
-          ))}
-        </svg>
+    <div className="jg-card jg-rise tc-wrap" style={{ padding: "clamp(18px,2.4vw,28px)" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", overflow: "visible" }}>
+        <defs>
+          <linearGradient id="tcg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={TEAMS.gloom.c2} stopOpacity="0.32" />
+            <stop offset="1" stopColor={TEAMS.gloom.c3} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width={W} height={midY} fill={TEAMS.gloom.c3} opacity="0.05" />
+        <path d={areaGloom} fill="url(#tcg)" />
+        <line x1={pad} y1={midY} x2={W - pad} y2={midY} stroke="var(--ink-faint)" strokeWidth="0.4" strokeDasharray="1.5 1.5" />
+        <text x={pad} y={midY - 1.4} fill="var(--ink-faint)" style={{ fontSize: 3 }}>50 · coin-flip</text>
+        <path d={line} fill="none" stroke="var(--ink)" strokeWidth="0.9" strokeLinejoin="round" strokeLinecap="round" />
+        {pts.map((p, i) => {
+          const w = p.index >= 50 ? "gloom" : "dogs";
+          return <circle key={i} cx={p.x} cy={p.y} r={p.live ? 1.7 : 1.1} fill={TEAMS[w].c3} stroke="var(--surfaceSolid)" strokeWidth="0.5" />;
+        })}
+        <circle cx={live.x} cy={live.y} r="2.6" fill="none" stroke="#e0392b" strokeWidth="0.6">
+          <animate attributeName="r" values="2;3.4;2" dur="1.6s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <div className="tc-legend">
+        <span><i style={{ background: TEAMS.gloom.c3 }} />Above 50 = Gloom controls the day</span>
+        <span><i style={{ background: TEAMS.dogs.c3 }} />Below 50 = Dogs burn it off</span>
       </div>
-    </section>
+    </div>
   );
 }

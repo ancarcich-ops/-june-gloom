@@ -1,7 +1,11 @@
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useSeason } from "./lib/useSeason";
-import type { Season } from "./lib/types";
+import { moodFromIndex, SKY_INTENSITY, CREST_VARIANT, type Mood } from "./lib/mood";
+import { TEAMS } from "./lib/teams";
+import { celebrate } from "./lib/confetti";
+import type { Season, TeamId } from "./lib/types";
+import { Crest } from "./components/icons";
+import DynamicBackground from "./components/DynamicBackground";
 import Scoreboard from "./components/Scoreboard";
 import TodayGame from "./components/TodayGame";
 import SeasonGrid from "./components/SeasonGrid";
@@ -9,11 +13,14 @@ import CityBreakdown from "./components/CityBreakdown";
 import TrendChart from "./components/TrendChart";
 import HallOfChampions from "./components/HallOfChampions";
 import Methodology from "./components/Methodology";
-import DynamicBackground from "./components/DynamicBackground";
 
-type View = "scoreboard" | "methodology";
+type View = "board" | "how";
 
-/** Today's index (live or final), else the latest finished day, else neutral. */
+const CONFETTI: Record<TeamId, string[]> = {
+  gloom: [TEAMS.gloom.c1, TEAMS.gloom.c3, "#ffffff", TEAMS.gloom.c4],
+  dogs: [TEAMS.dogs.c1, TEAMS.dogs.c3, "#ffffff", TEAMS.dogs.c4],
+};
+
 function currentIndex(season: Season | null): number {
   if (!season) return 50;
   if (season.todaysGame) return season.todaysGame.gloomIndex;
@@ -21,176 +28,176 @@ function currentIndex(season: Season | null): number {
   return finals.length ? finals[finals.length - 1].gloomIndex : 50;
 }
 
-export default function App() {
-  const { season, loading, error, reload } = useSeason();
-  const [view, setView] = useState<View>("scoreboard");
-
+function Header({ mood, view, setView }: { mood: Mood; view: View; setView: (v: View) => void }) {
+  const leadName = mood.isDay ? "Sun" : "Gloom";
   return (
-    <div className="min-h-screen px-4 pb-16 pt-6 sm:px-6">
-      <DynamicBackground index={currentIndex(season)} />
-      <Header view={view} setView={setView} />
-
-      <AnimatePresence mode="wait">
-        {view === "methodology" ? (
-          <motion.main
-            key="methodology"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="mt-6"
-          >
-            <Methodology />
-          </motion.main>
-        ) : (
-          <motion.main
-            key="scoreboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="mt-6"
-          >
-            {loading && <Loading />}
-            {error && <ErrorCard message={error} onRetry={reload} />}
-            {season && !loading && !error && (
-              <>
-                <Scoreboard season={season} />
-                <TodayGame season={season} />
-                <SeasonGrid season={season} />
-                <CityBreakdown season={season} />
-                <TrendChart season={season} />
-                <HallOfChampions />
-              </>
-            )}
-          </motion.main>
-        )}
-      </AnimatePresence>
-
-      <Footer />
-    </div>
-  );
-}
-
-function Header({
-  view,
-  setView,
-}: {
-  view: View;
-  setView: (v: View) => void;
-}) {
-  return (
-    <header className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
-      <div className="text-center sm:text-left">
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl"
-        >
-          <span className="animate-float inline-block">🌞</span> June Gloom Bowl{" "}
-          <span className="animate-float inline-block">🌫️</span>
-        </motion.h1>
-        <p className="text-sm text-white/45">
-          Big Dogs vs The Gloom + Grant · live from the SoCal coast
-        </p>
+    <header className="jg-header" style={{ background: mood.isDay ? "rgba(255,250,238,0.5)" : "rgba(8,13,22,0.45)" }}>
+      <div className="jg-wrap jg-header-in">
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="30" height="30" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="none" stroke={TEAMS.dogs.accent} strokeWidth="2.4" />
+            <path d="M2 21a18 18 0 0 0 36 0z" fill={TEAMS.gloom.accent} opacity="0.92" />
+            <circle cx="20" cy="16" r="6.2" fill={TEAMS.dogs.c2} />
+          </svg>
+          <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-0.01em" }}>June Gloom Bowl</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span className="jg-moodchip">
+            <Crest team={mood.leader} variant={CREST_VARIANT} size={22} glow={false} />
+            <span className="hidem">{leadName} leading</span>
+            <b style={{ color: mood.leadAccent }}>{Math.round(mood.index)}</b>
+          </span>
+          <nav className="jg-nav">
+            <button data-on={view === "board" ? "1" : "0"} onClick={() => setView("board")}>Scoreboard</button>
+            <button data-on={view === "how" ? "1" : "0"} onClick={() => setView("how")}>How it works</button>
+          </nav>
+        </div>
       </div>
-
-      <nav className="flex rounded-full bg-white/5 p-1 text-sm">
-        <NavBtn active={view === "scoreboard"} onClick={() => setView("scoreboard")}>
-          Scoreboard
-        </NavBtn>
-        <NavBtn
-          active={view === "methodology"}
-          onClick={() => setView("methodology")}
-        >
-          How it works
-        </NavBtn>
-      </nav>
     </header>
   );
 }
 
-function NavBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function SectionHead({ n, title, sub }: { n: string; title: string; sub?: string }) {
   return (
-    <button
-      onClick={onClick}
-      className={`relative rounded-full px-4 py-1.5 font-medium transition-colors ${
-        active ? "text-slate-900" : "text-white/60 hover:text-white"
-      }`}
-    >
-      {active && (
-        <motion.span
-          layoutId="navpill"
-          className="absolute inset-0 rounded-full bg-white"
-          transition={{ type: "spring", stiffness: 350, damping: 30 }}
-        />
-      )}
-      <span className="relative z-10">{children}</span>
-    </button>
+    <div className="jg-sec-hd">
+      <div>
+        <div className="jg-sec-num">{n}</div>
+        <h2 className="jg-h2" style={{ marginTop: 6 }}>{title}</h2>
+      </div>
+      {sub && <p className="jg-sub" style={{ maxWidth: 320, textAlign: "right" }}>{sub}</p>}
+    </div>
+  );
+}
+
+export default function App() {
+  const { season, loading, error, reload } = useSeason();
+  const [view, setView] = useState<View>("board");
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const mood = moodFromIndex(currentIndex(season), SKY_INTENSITY);
+
+  // Celebrate the day's winner once today's game is final.
+  const fired = useRef(false);
+  useEffect(() => {
+    const g = season?.todaysGame;
+    if (!fired.current && g && g.status === "final") {
+      fired.current = true;
+      celebrate(CONFETTI[g.winner]);
+    }
+  }, [season]);
+
+  const rootStyle: Record<string, string> = {
+    "--ink": mood.ink,
+    "--ink-soft": mood.inkSoft,
+    "--ink-faint": mood.inkFaint,
+    "--surface": mood.surface,
+    "--surface2": mood.surface2,
+    "--surfaceSolid": mood.surfaceSolid,
+    "--border": mood.border,
+    "--border-strong": mood.borderStrong,
+    "--lead": mood.leadAccent,
+    "--lead-glow": mood.leadGlow,
+    background: mood.pageBg,
+    backgroundColor: mood.skyBase,
+    backgroundAttachment: "fixed",
+  };
+
+  return (
+    <div className="jg-root" style={rootStyle as unknown as CSSProperties}>
+      <DynamicBackground mood={mood} texture />
+
+      <div className="jg-content">
+        <Header mood={mood} view={view} setView={setView} />
+
+        <div className="jg-wrap">
+          {view === "board" ? (
+            <>
+              <div className="jg-hero-eyebrow jg-rise">
+                <span className="jg-eyebrow">Sun vs. Marine Layer · SoCal Coast</span>
+                <h1>The June Gloom Bowl</h1>
+                <p className="jg-sub">A season-long rivalry. Every June morning is a game — does the
+                  gloom hold, or do the Big Dogs burn it off?</p>
+              </div>
+
+              {loading && <Loading />}
+              {error && <ErrorCard message={error} onRetry={reload} />}
+
+              {season && !loading && !error && (
+                <>
+                  <Scoreboard season={season} crest={CREST_VARIANT} run={mounted} />
+
+                  <section className="jg-sec">
+                    <SectionHead n="01 · LIVE" title="Today's Game" sub="The marquee. The whole sky moves with today's index." />
+                    <TodayGame season={season} crest={CREST_VARIANT} />
+                  </section>
+
+                  <section className="jg-sec">
+                    <SectionHead n="02" title="Season Ledger" sub="30 mornings, one per day." />
+                    <SeasonGrid season={season} />
+                  </section>
+
+                  <section className="jg-sec">
+                    <SectionHead n="03" title="City Box Score" sub="Per-beach Gloom Index, north to south. Midline is the coin-flip." />
+                    <CityBreakdown season={season} />
+                  </section>
+
+                  <section className="jg-sec">
+                    <SectionHead n="04" title="Gloom Index Trend" sub="Above the line the Gloom rules; below it the Dogs do." />
+                    <TrendChart season={season} />
+                  </section>
+
+                  <section className="jg-sec">
+                    <SectionHead n="05" title="Hall of Champions" sub="Five seasons, dead even at 75–75. 2026 breaks the tie." />
+                    <HallOfChampions />
+                  </section>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="jg-hero-eyebrow jg-rise">
+                <span className="jg-eyebrow">The rulebook</span>
+                <h1>How the Bowl is scored</h1>
+                <p className="jg-sub">No opinions — just the morning marine layer over six beaches, turned into one number.</p>
+              </div>
+              <section className="jg-sec" style={{ marginTop: 8 }}>
+                <SectionHead n="01" title="From fog to final score" />
+                <Methodology />
+              </section>
+              <section className="jg-sec">
+                <SectionHead n="02" title="Hall of Champions" />
+                <HallOfChampions />
+              </section>
+            </>
+          )}
+
+          <footer className="jg-footer">
+            <span>Gloom Index from live morning low-cloud cover · 6 LA &amp; OC beaches · a concept, not a forecast.</span>
+            <span>June Gloom Bowl · {season?.year ?? 2026} season</span>
+          </footer>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function Loading() {
   return (
-    <div className="mx-auto mt-10 w-full max-w-4xl text-center">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1.4, ease: "linear" }}
-        className="mx-auto mb-4 h-10 w-10 rounded-full border-2 border-white/15 border-t-dogs-400"
-      />
-      <p className="text-white/50">Pulling the marine layer off the coast…</p>
+    <div className="jg-card jg-rise" style={{ padding: 40, textAlign: "center", color: "var(--ink-soft)" }}>
+      Pulling the marine layer off the coast…
     </div>
   );
 }
 
-function ErrorCard({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry: () => void;
-}) {
+function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="card-glass mx-auto mt-10 w-full max-w-md rounded-2xl p-6 text-center">
-      <p className="text-white/80">Couldn't load the weather data.</p>
-      <p className="mt-1 text-sm text-white/45">{message}</p>
-      <button
-        onClick={onRetry}
-        className="mt-4 rounded-full bg-dogs-500 px-5 py-2 font-semibold text-slate-900 hover:bg-dogs-400"
-      >
-        Try again
-      </button>
+    <div className="jg-card jg-rise" style={{ padding: 28, textAlign: "center" }}>
+      <p style={{ margin: 0, fontWeight: 600 }}>Couldn't load the weather data.</p>
+      <p className="jg-sub" style={{ margin: "6px 0 16px" }}>{message}</p>
+      <button className="jg-pill" style={{ cursor: "pointer" }} onClick={onRetry}>Try again</button>
     </div>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="mx-auto mt-10 w-full max-w-4xl text-center text-xs text-white/35">
-      Data:{" "}
-      <a
-        className="underline hover:text-white/60"
-        href="https://open-meteo.com/"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Open-Meteo
-      </a>{" "}
-      · Built for fun ·{" "}
-      <a
-        className="underline hover:text-white/60"
-        href="https://github.com/ancarcich-ops/-june-gloom"
-        target="_blank"
-        rel="noreferrer"
-      >
-        source
-      </a>
-    </footer>
   );
 }

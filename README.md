@@ -34,7 +34,9 @@ live on the in-app **How it works** page.
 
 ## Tech
 
-- **Frontend** (`web/`): Vite + React + TypeScript + Tailwind CSS + Framer Motion.
+- **Frontend** (`web/`): Vite + React + TypeScript, with a broadcast-style design
+  and a day↔night "mood engine" (CSS variables driven by today's Gloom Index —
+  light & warm when the sun leads, dark & foggy when the gloom holds).
   Fetches live weather **client-side** from Open-Meteo (no server, no API key).
 - **Deploy**: GitHub Actions builds `web/` and publishes to GitHub Pages.
 - **Python library** (`src/june_gloom/`): the original historical analysis
