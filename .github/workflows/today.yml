@@ -1,0 +1,30 @@
+name: Today check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/today.mjs"
+      - ".github/workflows/today.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  today:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Compute today
+        run: node scripts/today.mjs
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add analysis/today.md
+          git diff --staged --quiet || git commit -m "Today check [skip ci]"
+          git push
