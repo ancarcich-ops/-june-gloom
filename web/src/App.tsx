@@ -1,14 +1,24 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSeason } from "./lib/useSeason";
+import type { Season } from "./lib/types";
 import Scoreboard from "./components/Scoreboard";
 import TodayGame from "./components/TodayGame";
 import SeasonGrid from "./components/SeasonGrid";
 import CityBreakdown from "./components/CityBreakdown";
 import TrendChart from "./components/TrendChart";
 import Methodology from "./components/Methodology";
+import DynamicBackground from "./components/DynamicBackground";
 
 type View = "scoreboard" | "methodology";
+
+/** Today's index (live or final), else the latest finished day, else neutral. */
+function currentIndex(season: Season | null): number {
+  if (!season) return 50;
+  if (season.todaysGame) return season.todaysGame.gloomIndex;
+  const finals = season.days.filter((d) => d.status === "final");
+  return finals.length ? finals[finals.length - 1].gloomIndex : 50;
+}
 
 export default function App() {
   const { season, loading, error, reload } = useSeason();
@@ -16,6 +26,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen px-4 pb-16 pt-6 sm:px-6">
+      <DynamicBackground index={currentIndex(season)} />
       <Header view={view} setView={setView} />
 
       <AnimatePresence mode="wait">
