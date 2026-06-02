@@ -26,7 +26,7 @@ jobs:
           node-version: "20"
 
       - name: Compute season score
-        run: node scripts/score-season.mjs ${{ github.event.inputs.year || '2025' }}
+        run: node scripts/score-season.mjs ${{ github.event.inputs.year || '2025 2024' }}
 
       - name: Commit report back
         run: |

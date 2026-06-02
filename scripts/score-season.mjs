@@ -71,8 +71,7 @@ function stationDayIndex(times, low, sun) {
   return out;
 }
 
-async function main() {
-  const year = process.argv[2] || "2025";
+async function runYear(year) {
   const raw = await fetchArchive(year);
 
   const perStation = STATIONS.map((s, i) => {
@@ -131,6 +130,12 @@ async function main() {
   console.log(`Big Dogs:          ${dogWins}-${gloomWins}   ${dogPoints} pts`);
   console.log(`The Gloom + Grant: ${gloomWins}-${dogWins}   ${gloomPoints} pts`);
   console.log(`Winner: ${seasonWinner} by ${Math.abs(gloomPoints - dogPoints)} pts over ${days.length} games\n`);
+}
+
+async function main() {
+  const years = process.argv.slice(2);
+  if (!years.length) years.push("2025");
+  for (const year of years) await runYear(year);
 }
 
 main().catch((e) => {
