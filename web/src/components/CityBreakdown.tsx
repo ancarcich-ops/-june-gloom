@@ -1,8 +1,10 @@
+import { useEffect, useRef } from "react";
+import * as L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import type { Season, DayResult } from "../lib/types";
 import { TEAMS } from "../lib/teams";
 import { WIN_THRESHOLD } from "../lib/gloom";
 
-// Short labels per beach; positions now come from real lat/long.
 const ABBR: Record<string, string> = {
   santa_monica: "SMO",
   manhattan_beach: "MNB",
@@ -18,91 +20,84 @@ function pickDay(season: Season): DayResult | null {
   return finals.length ? finals[finals.length - 1] : null;
 }
 
-// Smooth (Catmull-Rom → bézier) path through the points.
-function smoothPath(pts: { x: number; y: number }[]): string {
-  if (pts.length < 2) return "";
-  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] ?? pts[i];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
-  }
-  return d;
-}
-
-export default function CityBreakdown({ season }: { season: Season }) {
+export default function CityBreakdown({ season, dark = true }: { season: Season; dark?: boolean }) {
   const day = pickDay(season);
-  if (!day) return null;
+  const mapEl = useRef<HTMLDivElement>(null);
 
-  const stations = day.stations;
-  const lats = stations.map((s) => s.station.lat);
-  const lons = stations.map((s) => s.station.lon);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-  const padX = 12, padR = 18, padT = 12, padB = 14;
-  const W = 100, H = 110;
-  const sx = (lon: number) => padX + ((lon - minLon) / (maxLon - minLon || 1)) * (W - padX - padR);
-  const sy = (lat: number) => padT + ((maxLat - lat) / (maxLat - minLat || 1)) * (H - padT - padB);
-
-  const rows = stations.map((s) => {
+  const rows = (day?.stations ?? []).map((s) => {
     const index = Math.round(s.index);
     return {
       id: s.station.id,
       name: s.station.name,
       abbr: ABBR[s.station.id] ?? s.station.id.slice(0, 3).toUpperCase(),
       index,
-      px: sx(s.station.lon),
-      py: sy(s.station.lat),
+      lat: s.station.lat,
+      lon: s.station.lon,
       winner: index >= WIN_THRESHOLD ? ("gloom" as const) : ("dogs" as const),
     };
   });
 
-  const coast = smoothPath(rows.map((r) => ({ x: r.px, y: r.py })));
-  const first = rows[0], last = rows[rows.length - 1];
-  // Land sits to the NE (inland) of the coastline; sea fills the rest.
-  const land = `${coast} L ${W} ${last.py.toFixed(2)} L ${W} 0 L ${first.px.toFixed(2)} 0 Z`;
+  // Re-init only when the plotted data or theme actually changes.
+  const mapKey = rows.map((r) => `${r.id}:${r.index}`).join("|") + `|${dark}`;
+
+  useEffect(() => {
+    if (!mapEl.current || rows.length === 0) return;
+    const map = L.map(mapEl.current, {
+      scrollWheelZoom: false,
+      zoomControl: false,
+      attributionControl: true,
+    });
+    L.control.zoom({ position: "topright" }).addTo(map);
+
+    const url = dark
+      ? "https://{s}.basemap.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemap.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+    L.tileLayer(url, {
+      subdomains: "abcd",
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+    }).addTo(map);
+
+    const pts: L.LatLngExpression[] = [];
+    for (const b of rows) {
+      const t = TEAMS[b.winner];
+      const radius = 6 + (Math.abs(b.index - 50) / 50) * 8;
+      L.circleMarker([b.lat, b.lon], {
+        radius,
+        color: "#fff",
+        weight: 1.5,
+        fillColor: t.c3,
+        fillOpacity: 0.92,
+      })
+        .addTo(map)
+        .bindTooltip(`${b.abbr} ${b.index}`, {
+          permanent: true,
+          direction: "right",
+          className: "cb-tip",
+          offset: [6, 0],
+        });
+      pts.push([b.lat, b.lon]);
+    }
+    map.fitBounds(L.latLngBounds(pts).pad(0.35));
+    const t = setTimeout(() => map.invalidateSize(), 60);
+
+    return () => {
+      clearTimeout(t);
+      map.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapKey]);
+
+  if (!day) return null;
 
   return (
     <div className="jg-card jg-rise" style={{ padding: "clamp(18px,2.4vw,28px)" }}>
       <div className="cb-wrap">
-        {/* real coastline map (beaches at true lat/long) */}
         <div className="cb-map">
-          <svg viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
-            <defs>
-              <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="rgba(120,160,195,0.12)" />
-                <stop offset="1" stopColor="rgba(90,130,170,0.22)" />
-              </linearGradient>
-            </defs>
-            <rect x="0" y="0" width={W} height={H} fill="url(#sea)" />
-            <path d={land} fill="rgba(125,147,171,0.10)" />
-            <path d={coast} fill="none" stroke="var(--border-strong)" strokeWidth="0.8" strokeLinecap="round" strokeDasharray="2.5 2" />
-            {rows.map((b) => {
-              const t = TEAMS[b.winner];
-              const r = 2.6 + (Math.abs(b.index - 50) / 50) * 2.6;
-              return (
-                <g key={b.id}>
-                  <circle cx={b.px} cy={b.py} r={r + 3} fill={t.glow} opacity="0.5" />
-                  <circle cx={b.px} cy={b.py} r={r} fill={t.c3} stroke="#fff" strokeWidth="0.6" />
-                  <text x={b.px + r + 2} y={b.py + 2.4} className="cb-pin-lbl" fill="var(--ink-soft)" style={{ fontSize: 4 }}>
-                    {b.abbr} {b.index}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-          <div style={{ position: "absolute", left: 12, top: 12, fontSize: 11, fontWeight: 600, color: "var(--ink-faint)", letterSpacing: ".04em" }}>
-            LA &amp; OC coast · plotted by location
-          </div>
+          <div ref={mapEl} className="cb-leaflet" />
+          <div className="cb-mapcap">LA &amp; OC coast · live map</div>
         </div>
 
-        {/* bars */}
         <div className="cb-rows">
           {rows.map((b) => {
             const t = TEAMS[b.winner];
@@ -130,12 +125,10 @@ export default function CityBreakdown({ season }: { season: Season }) {
         </div>
       </div>
 
-      {/* legend explaining the map */}
       <div className="cb-legend">
-        <span><i style={{ background: TEAMS.dogs.c3 }} />Gold dot = sun winning that beach (index &lt; 50)</span>
-        <span><i style={{ background: TEAMS.gloom.c3 }} />Slate dot = fog winning (index ≥ 50)</span>
-        <span>Bigger dot = more lopsided</span>
-        <span>Dashed line = the coastline</span>
+        <span><i style={{ background: TEAMS.dogs.c3 }} />Gold = sun winning that beach (index &lt; 50)</span>
+        <span><i style={{ background: TEAMS.gloom.c3 }} />Slate = fog winning (index ≥ 50)</span>
+        <span>Bigger marker = more lopsided</span>
       </div>
     </div>
   );

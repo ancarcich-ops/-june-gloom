@@ -141,7 +141,7 @@ export default function App() {
 
                   <section className="jg-sec">
                     <SectionHead n="03" title="City Box Score" sub="Per-beach Gloom Index, north to south. Midline is the coin-flip." />
-                    <CityBreakdown season={season} />
+                    <CityBreakdown season={season} dark={mood.scheme === "dark"} />
                   </section>
 
                   <section className="jg-sec">

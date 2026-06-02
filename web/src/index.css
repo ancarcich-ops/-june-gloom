@@ -242,7 +242,18 @@ body {
 /* ── City box score ────────────────────────────────────────────────── */
 .cb-wrap { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 22px; }
 .cb-map { position: relative; border-radius: var(--r-md); border: 1px solid var(--border);
-  background: var(--surface); overflow: hidden; min-height: 300px; }
+  background: var(--surface); overflow: hidden; min-height: 300px; isolation: isolate; }
+.cb-leaflet { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cb-mapcap { position: absolute; left: 12px; top: 12px; z-index: 1000; pointer-events: none;
+  font-size: 11px; font-weight: 600; color: var(--ink-faint); letter-spacing: .04em;
+  background: var(--surface2); padding: 3px 8px; border-radius: 999px; }
+.leaflet-container { background: var(--skybase, #0a1322); font-family: inherit; }
+.leaflet-tooltip.cb-tip { background: rgba(8,13,22,0.82); color: #eaf1fb; border: none;
+  box-shadow: none; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 11px;
+  padding: 2px 6px; border-radius: 6px; }
+.leaflet-tooltip.cb-tip::before { display: none; }
+.leaflet-control-attribution { font-size: 9px; }
+.leaflet-bar a { background: var(--surface2); color: var(--ink); border-color: var(--border); }
 .cb-rows { display: flex; flex-direction: column; gap: 14px; }
 .cb-row { display: grid; grid-template-columns: 124px 1fr 42px; align-items: center; gap: 12px; }
 .cb-name { font-size: 13px; font-weight: 600; }
