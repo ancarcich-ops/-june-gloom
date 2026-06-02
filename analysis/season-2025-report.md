@@ -48,4 +48,4 @@ Biggest blowout: June 5 — Gloom 94–6.
 | Jun 29 | 25.5 | 25–75 | 🌞 Dogs |
 | Jun 30 | 27.8 | 28–72 | 🌞 Dogs |
 
-_Generated 2026-06-02T01:26:19.687Z._
+_Generated 2026-06-02T01:30:19.317Z._
