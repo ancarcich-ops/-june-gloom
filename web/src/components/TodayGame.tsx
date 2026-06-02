@@ -60,6 +60,11 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
       ? Math.round(burned.reduce((a, s) => a + (s.burnOffHour as number), 0) / burned.length)
       : null;
 
+  // Before the window closes, the score (and burn-off) is a forecast, not observed.
+  const projected = day.status !== "final";
+  const burnVal = avgBurn == null ? "—" : projected ? `~${fmtHour(avgBurn)}` : fmtHour(avgBurn);
+  const burnSub = avgBurn == null ? "stayed socked in" : projected ? "projected clearing" : "avg. clearing time";
+
   const dateLabel = new Date(day.date + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "short",
     month: "long",
@@ -121,7 +126,7 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
       </div>
 
       <div className="tg-stats">
-        <StatTile icon={Ic.BurnOff} v={avgBurn != null ? fmtHour(avgBurn) : "—"} k="Avg. burn-off" s="when the fog thinned" />
+        <StatTile icon={Ic.BurnOff} v={burnVal} k="Avg. burn-off" s={burnSub} />
         <StatTile icon={Ic.Fog} v={`${socked} / ${total}`} k="Beaches socked in" s="index 50 or higher" />
         <StatTile icon={Ic.Sun} v={`${clear} / ${total}`} k="Beaches cleared" s="index below 50" />
         <StatTile icon={Ic.Marine} v={`${gloomScore}`} k="Coast average" s="mean Gloom Index" />

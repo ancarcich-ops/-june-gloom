@@ -167,9 +167,12 @@ body {
 .jb-ptslbl { font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--ink-faint); margin-top: 4px; }
 .jb-rec { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
-.jb-reclbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+.jb-reclbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+.jb-crown { white-space: nowrap; }
+.jb-streak { white-space: nowrap; }
 .jb-recpill { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px;
-  padding: 4px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); }
+  padding: 4px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  white-space: nowrap; }
 .jb-center { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .jb-vs { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
   font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 18px; letter-spacing: -0.04em;
@@ -189,6 +192,8 @@ body {
   .jb-pts { font-size: 52px; }
   .jb-team.gloom { flex-direction: row-reverse; text-align: right; }
   .jb-team.gloom .col { align-items: flex-end; }
+  .jb-rec { flex-wrap: wrap; gap: 6px; }
+  .jb-reclbl { display: none; }
 }
 
 /* ── Today's Game ──────────────────────────────────────────────────── */

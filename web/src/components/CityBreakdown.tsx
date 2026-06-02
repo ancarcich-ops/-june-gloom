@@ -73,11 +73,13 @@ export default function CityBreakdown({ season, dark = true }: { season: Season;
       fogPane.style.zIndex = "350";
       fogPane.style.pointerEvents = "none";
     }
+    // Subtle haze only — strong enough to feel gloomy, never enough to grey out
+    // the map. Scales with the day's index but caps low.
     L.rectangle(bounds.pad(1.2), {
       pane: "fog",
       stroke: false,
-      fillColor: "#e2e9f2",
-      fillOpacity: (coastalIdx / 100) * 0.5,
+      fillColor: "#dbe4ef",
+      fillOpacity: Math.min(0.22, (coastalIdx / 100) * 0.22),
     }).addTo(map);
 
     markersRef.current = {};
