@@ -74,7 +74,7 @@ export default function HallOfChampions() {
         {seasons.map((s) => {
           const champ = (s.winner === "dogs" ? "dogs" : "gloom") as TeamId;
           const t = TEAMS[champ];
-          const bw = s.biggest.winner === "gloom" ? "🌫️" : "🌞";
+          const bt = s.biggest.winner === "dogs" ? TEAMS.dogs : TEAMS.gloom;
           return (
             <div key={s.year} className="hc-card">
               <span className="topbar" style={{ background: t.c3 }} />
@@ -87,7 +87,7 @@ export default function HallOfChampions() {
               <MiniSpark data={s.scores} color={t.c3} />
               <div className="hc-mvp">
                 Biggest blowout<br />
-                <b>{bw} {s.biggest.win}–{s.biggest.lose} · Jun {Number(s.biggest.date.slice(8))}</b>
+                <b><span style={{ color: bt.c3 }}>{bt.short}</span> {s.biggest.win}–{s.biggest.lose} · Jun {Number(s.biggest.date.slice(8))}</b>
               </div>
             </div>
           );
@@ -95,8 +95,8 @@ export default function HallOfChampions() {
       </div>
 
       <div className="hc-era">
-        <span className="hc-era-tag" style={{ color: TEAMS.dogs.c3, borderColor: "var(--border)" }}>☀ Dogs Dynasty · '21–'22</span>
-        <span className="hc-era-tag" style={{ color: TEAMS.gloom.c3, borderColor: "var(--border)" }}>☁ Gloom Era · '23–'25</span>
+        <span className="hc-era-tag" style={{ color: TEAMS.dogs.c3, borderColor: "var(--border)" }}>● Dogs Dynasty · '21–'22</span>
+        <span className="hc-era-tag" style={{ color: TEAMS.gloom.c3, borderColor: "var(--border)" }}>● Gloom Era · '23–'25</span>
         <span className="hc-era-tag" style={{ color: "var(--ink-faint)" }}>2026 · the tiebreaker season</span>
       </div>
     </div>

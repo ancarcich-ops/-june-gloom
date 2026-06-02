@@ -12,7 +12,7 @@ import SeasonGrid from "./components/SeasonGrid";
 import CityBreakdown from "./components/CityBreakdown";
 import TrendChart from "./components/TrendChart";
 import HallOfChampions from "./components/HallOfChampions";
-import Methodology from "./components/Methodology";
+import Methodology, { About } from "./components/Methodology";
 
 type View = "board" | "how";
 
@@ -164,11 +164,15 @@ export default function App() {
                 <p className="jg-sub">No opinions — just the morning marine layer over six beaches, turned into one number.</p>
               </div>
               <section className="jg-sec" style={{ marginTop: 8 }}>
-                <SectionHead n="01" title="From fog to final score" />
+                <SectionHead n="01" title="What is this?" sub="The gist, plus a plain-English version." />
+                <About />
+              </section>
+              <section className="jg-sec">
+                <SectionHead n="02" title="From fog to final score" />
                 <Methodology />
               </section>
               <section className="jg-sec">
-                <SectionHead n="02" title="Hall of Champions" />
+                <SectionHead n="03" title="Hall of Champions" />
                 <HallOfChampions />
               </section>
             </>

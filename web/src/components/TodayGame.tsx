@@ -25,12 +25,13 @@ function windowProgress(isLive: boolean): number {
   return Math.max(0, Math.min(1, (mins - 7 * 60) / (12 * 60 - 7 * 60)));
 }
 
-function StatTile({ icon: Icon, v, k }: { icon: (typeof Ic)[keyof typeof Ic]; v: string; k: string }) {
+function StatTile({ icon: Icon, v, k, s }: { icon: (typeof Ic)[keyof typeof Ic]; v: string; k: string; s?: string }) {
   return (
     <div className="tg-stat">
       <span className="ic"><Icon width="20" height="20" /></span>
       <span className="v">{v}</span>
       <span className="k">{k}</span>
+      {s && <span className="s">{s}</span>}
     </div>
   );
 }
@@ -50,11 +51,13 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
   const isForecast = day.status === "upcoming"; // today, before the 7 AM window opens
   const progress = windowProgress(live);
 
-  const cleared = day.stations.filter((s) => s.burnOffHour != null);
+  const total = day.stations.length;
   const socked = day.stations.filter((s) => s.index >= WIN_THRESHOLD).length;
+  const clear = total - socked;
+  const burned = day.stations.filter((s) => s.burnOffHour != null);
   const avgBurn =
-    cleared.length > 0
-      ? Math.round(cleared.reduce((a, s) => a + (s.burnOffHour as number), 0) / cleared.length)
+    burned.length > 0
+      ? Math.round(burned.reduce((a, s) => a + (s.burnOffHour as number), 0) / burned.length)
       : null;
 
   const dateLabel = new Date(day.date + "T00:00:00").toLocaleDateString("en-US", {
@@ -118,10 +121,10 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
       </div>
 
       <div className="tg-stats">
-        <StatTile icon={Ic.BurnOff} v={avgBurn != null ? fmtHour(avgBurn) : "—"} k="Burn-off time" />
-        <StatTile icon={Ic.Fog} v={`${socked} bch`} k="Still socked in" />
-        <StatTile icon={Ic.Sun} v={`${cleared.length} bch`} k="Already cleared" />
-        <StatTile icon={Ic.Marine} v={`${day.stations.length}`} k="Beaches scored" />
+        <StatTile icon={Ic.BurnOff} v={avgBurn != null ? fmtHour(avgBurn) : "—"} k="Avg. burn-off" s="when the fog thinned" />
+        <StatTile icon={Ic.Fog} v={`${socked} / ${total}`} k="Beaches socked in" s="index 50 or higher" />
+        <StatTile icon={Ic.Sun} v={`${clear} / ${total}`} k="Beaches cleared" s="index below 50" />
+        <StatTile icon={Ic.Marine} v={`${gloomScore}`} k="Coast average" s="mean Gloom Index" />
       </div>
     </div>
   );

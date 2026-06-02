@@ -33,8 +33,10 @@ function TeamPanel({
       </div>
       <div className="col col-pts">
         <Count className="jb-pts led" value={pts} run={run} style={{ color: t.c3 }} />
+        <div className="jb-ptslbl">Season points</div>
         <div className="jb-rec">
           <span className="jb-recpill" style={{ color: t.c3 }}>{rec}</span>
+          <span className="jb-reclbl">W–L</span>
           {crown && (
             <span className="jb-crown" style={{ background: t.glow, color: teamId === "dogs" ? "#7a4d06" : "#2b3a52" }}>
               <Ic.Crown width="13" height="13" /> Lead
