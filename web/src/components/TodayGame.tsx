@@ -47,6 +47,7 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
   const lt = TEAMS[leader];
   const margin = Math.abs(dogScore - gloomScore);
   const live = day.status === "live";
+  const isForecast = day.status === "upcoming"; // today, before the 7 AM window opens
   const progress = windowProgress(live);
 
   const cleared = day.stations.filter((s) => s.burnOffHour != null);
@@ -69,7 +70,11 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
           <span className="jg-h2">Today's Game</span>
           <span className="jb-daychip" style={{ fontSize: 12, color: "var(--ink-faint)", fontWeight: 600, letterSpacing: ".04em" }}>{dateLabel}</span>
         </div>
-        <span className="jg-live"><span className="dot" />{live ? "Live" : "Final"}</span>
+        {live ? (
+          <span className="jg-live"><span className="dot" />Live</span>
+        ) : (
+          <span className="jg-pill">{isForecast ? "Forecast" : "Final"}</span>
+        )}
       </div>
 
       <div className="tg-score">
@@ -87,7 +92,7 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
             {leader === "dogs" ? "Sun by " : "Gloom by "}{margin}
           </span>
           <span style={{ fontSize: 11, color: "var(--ink-faint)", fontWeight: 600 }}>
-            {live ? "window open" : "final"}
+            {live ? "window open" : isForecast ? "window opens 7 AM" : "final"}
           </span>
         </div>
 
@@ -104,7 +109,9 @@ export default function TodayGame({ season, crest }: { season: Season; crest: Cr
       <div className="tg-window">
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 7, fontWeight: 600 }}>
           <span>7:00 AM</span>
-          <span>{Math.round(progress * 100)}% of scoring window · gloom index {gloomScore}</span>
+          <span>
+            {isForecast ? "projected" : `${Math.round(progress * 100)}% of scoring window`} · gloom index {gloomScore}
+          </span>
           <span>12:00 PM</span>
         </div>
         <div className="tg-window-bar"><i style={{ width: `${progress * 100}%` }} /></div>

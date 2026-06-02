@@ -105,8 +105,10 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
 function statusFor(date: string, today: string, nowHour: number): DayStatus {
   if (date < today) return "final";
   if (date > today) return "upcoming";
-  // Today: the scoring window closes at noon (WINDOW_END), so once it's past
-  // noon PT every window hour is observed and the game is final.
+  // Today: the window is 7 AM–noon. Before it opens, all we have is a forecast,
+  // so the game hasn't started ("upcoming"). It's live during the window, and
+  // final once noon passes (every window hour observed).
+  if (nowHour < WINDOW_START) return "upcoming";
   return nowHour >= WINDOW_END ? "final" : "live";
 }
 
