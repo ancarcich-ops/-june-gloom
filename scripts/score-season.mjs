@@ -6,7 +6,7 @@
 //
 // NOTE: keep these constants in sync with web/src/lib/gloom.ts.
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile } from "node:fs/promises";
 
 const MORNING_START = 6;
 const MORNING_END = 12; // exclusive
@@ -130,12 +130,49 @@ async function runYear(year) {
   console.log(`Big Dogs:          ${dogWins}-${gloomWins}   ${dogPoints} pts`);
   console.log(`The Gloom + Grant: ${gloomWins}-${dogWins}   ${gloomPoints} pts`);
   console.log(`Winner: ${seasonWinner} by ${Math.abs(gloomPoints - dogPoints)} pts over ${days.length} games\n`);
+
+  return {
+    year: Number(year),
+    winner: gloomPoints >= dogPoints ? "gloom" : "dogs",
+    gloomWins,
+    dogWins,
+    gloomPoints,
+    dogPoints,
+    margin: Math.abs(gloomPoints - dogPoints),
+    games: days.length,
+    biggest: {
+      date: biggest.date,
+      winner: biggest.winner,
+      win: Math.max(biggest.gloomScore, biggest.dogScore),
+      lose: Math.min(biggest.gloomScore, biggest.dogScore),
+    },
+    scores: days.map((d) => d.gloomScore),
+  };
 }
+
+const HISTORY_PATH = "web/src/data/history.json";
 
 async function main() {
   const years = process.argv.slice(2);
   if (!years.length) years.push("2025");
-  for (const year of years) await runYear(year);
+
+  const summaries = [];
+  for (const year of years) summaries.push(await runYear(year));
+
+  // Merge with any existing history so a partial run never wipes other years.
+  let existing = [];
+  try {
+    existing = JSON.parse(await readFile(HISTORY_PATH, "utf8")).seasons ?? [];
+  } catch {
+    /* first run */
+  }
+  const byYear = new Map(existing.map((s) => [s.year, s]));
+  for (const s of summaries) byYear.set(s.year, s);
+  const seasons = [...byYear.values()].sort((a, b) => b.year - a.year);
+
+  await mkdir("web/src/data", { recursive: true });
+  await writeFile(HISTORY_PATH, JSON.stringify({ seasons }, null, 2) + "\n");
+  console.log(`Wrote ${HISTORY_PATH} (${seasons.length} seasons).`);
 }
 
 main().catch((e) => {

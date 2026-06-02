@@ -7,6 +7,7 @@ import TodayGame from "./components/TodayGame";
 import SeasonGrid from "./components/SeasonGrid";
 import CityBreakdown from "./components/CityBreakdown";
 import TrendChart from "./components/TrendChart";
+import HallOfChampions from "./components/HallOfChampions";
 import Methodology from "./components/Methodology";
 import DynamicBackground from "./components/DynamicBackground";
 
@@ -57,6 +58,7 @@ export default function App() {
                 <SeasonGrid season={season} />
                 <CityBreakdown season={season} />
                 <TrendChart season={season} />
+                <HallOfChampions />
               </>
             )}
           </motion.main>
