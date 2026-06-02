@@ -92,7 +92,10 @@ export default function Scoreboard({ season }: { season: Season }) {
       <div className="card-glass rounded-3xl p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between text-[11px] uppercase tracking-[0.25em] text-white/45">
           <span>🏆 June Gloom Bowl · {season.year}</span>
-          <span>{season.finalsPlayed} games played</span>
+          <span>
+            {season.finalsPlayed} final
+            {season.today ? " · 1 live" : ""}
+          </span>
         </div>
 
         <div className="flex items-stretch gap-3 sm:gap-5">
@@ -135,10 +138,14 @@ export default function Scoreboard({ season }: { season: Season }) {
                 </>
               )}
             </span>
-          ) : season.finalsPlayed === 0 ? (
-            <span>First game finals at midnight tonight — check back tomorrow.</span>
           ) : (
             <span>All square. 🤝</span>
+          )}
+          {season.today && (
+            <div className="mt-1 text-xs text-white/40">
+              🔴 Game {season.finalsPlayed + 1} live now — today's score counts
+              toward the record once the day finishes (midnight PT).
+            </div>
           )}
         </div>
       </div>

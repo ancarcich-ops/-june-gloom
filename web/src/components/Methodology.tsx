@@ -200,8 +200,10 @@ export default function Methodology() {
             finished days won by the same team.
           </li>
           <li>
-            Today's game shows live but only counts once the day is final
-            (midnight Pacific).
+            Today's game counts toward <strong className="text-white/85">points</strong>{" "}
+            live and updates through the day, but only becomes a{" "}
+            <strong className="text-white/85">win/loss</strong> at midnight
+            Pacific.
           </li>
         </ul>
       </Section>

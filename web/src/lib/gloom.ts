@@ -150,6 +150,14 @@ export function buildSeason(allSeries: StationSeries[]): Season {
     dogPoints += d.dogScore;
   }
 
+  // Count today's in-progress game provisionally so the board is never blank on
+  // opening day. It contributes points live but only becomes a W/L at midnight.
+  const liveDay = days.find((d) => d.status === "live");
+  if (liveDay) {
+    gloomPoints += liveDay.gloomScore;
+    dogPoints += liveDay.dogScore;
+  }
+
   // Current win streak (finals only, walking backward).
   const finals = days.filter((d) => d.status === "final");
   let streakTeam: TeamId | null = null;
