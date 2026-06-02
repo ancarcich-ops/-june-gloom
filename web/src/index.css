@@ -255,7 +255,10 @@ body {
 .leaflet-control-attribution { font-size: 9px; }
 .leaflet-bar a { background: var(--surface2); color: var(--ink); border-color: var(--border); }
 .cb-rows { display: flex; flex-direction: column; gap: 14px; }
-.cb-row { display: grid; grid-template-columns: 124px 1fr 42px; align-items: center; gap: 12px; }
+.cb-row { display: grid; grid-template-columns: 124px 1fr 42px; align-items: center; gap: 12px;
+  padding: 5px 6px; margin: 0 -6px; border-radius: 9px; cursor: pointer; transition: background .15s ease; }
+.cb-row:hover { background: var(--surface); }
+.cb-row.sel { background: var(--surface2); box-shadow: inset 0 0 0 1px var(--border-strong); }
 .cb-name { font-size: 13px; font-weight: 600; }
 .cb-name small { display: block; font-size: 10.5px; color: var(--ink-faint); font-weight: 500; letter-spacing: .04em; }
 .cb-track { position: relative; height: 26px; border-radius: 8px; background: rgba(125,147,171,0.14); overflow: hidden; }
