@@ -12,7 +12,7 @@ import SeasonGrid from "./components/SeasonGrid";
 import CityBreakdown from "./components/CityBreakdown";
 import TrendChart from "./components/TrendChart";
 import HallOfChampions from "./components/HallOfChampions";
-import Methodology, { About } from "./components/Methodology";
+import Methodology, { About, Details } from "./components/Methodology";
 
 type View = "board" | "how";
 
@@ -168,11 +168,15 @@ export default function App() {
                 <About />
               </section>
               <section className="jg-sec">
-                <SectionHead n="02" title="From fog to final score" />
+                <SectionHead n="02" title="From fog to final score" sub="The five steps, at a glance." />
                 <Methodology />
               </section>
               <section className="jg-sec">
-                <SectionHead n="03" title="Hall of Champions" />
+                <SectionHead n="03" title="The calculation, in detail" sub="The exact formula, with a worked example." />
+                <Details />
+              </section>
+              <section className="jg-sec">
+                <SectionHead n="04" title="Hall of Champions" />
                 <HallOfChampions />
               </section>
             </>
