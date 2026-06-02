@@ -1,0 +1,37 @@
+name: Season report
+
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Season year to replay"
+        default: "2025"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/score-season.mjs"
+      - ".github/workflows/season-report.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Compute season score
+        run: node scripts/score-season.mjs ${{ github.event.inputs.year || '2025' }}
+
+      - name: Commit report back
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add analysis/
+          git diff --staged --quiet || git commit -m "Add season report [skip ci]"
+          git push
