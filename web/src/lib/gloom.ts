@@ -1,6 +1,7 @@
 import type {
   StationSeries,
   StationDay,
+  HourPoint,
   DayResult,
   Season,
   TeamId,
@@ -40,10 +41,54 @@ function clamp(n: number, lo = 0, hi = 100) {
 // Per-station, per-day index
 // --------------------------------------------------------------------------
 
+/**
+ * The pure Gloom Index math for a single beach-day. Takes a day's worth of
+ * hourly points, keeps only the scoring window, and returns the index plus its
+ * component stats — or null if no window hours have data. Exported for testing.
+ */
+export function windowIndex(
+  dayHours: HourPoint[],
+): Omit<StationDay, "station"> | null {
+  const hours = dayHours.filter(
+    (h) => h.hour >= WINDOW_START && h.hour < WINDOW_END,
+  );
+  if (hours.length === 0) return null;
+
+  const n = hours.length;
+  const meanLowCloud = hours.reduce((s, h) => s + h.lowCloud, 0) / n;
+  const sunFraction = clamp(
+    hours.reduce((s, h) => s + h.sunshineSec, 0) / (n * 3600),
+    0,
+    1,
+  );
+  const sockedHours = hours.filter((h) => h.lowCloud >= SOCKED_THRESHOLD).length;
+  const pctSocked = (100 * sockedHours) / n;
+
+  const index = clamp(
+    WEIGHTS.lowCloud * meanLowCloud +
+      WEIGHTS.sunless * (1 - sunFraction) * 100 +
+      WEIGHTS.socked * pctSocked,
+  );
+
+  // First window hour the low cloud dropped below threshold = burn-off.
+  const cleared = hours
+    .slice()
+    .sort((a, b) => a.hour - b.hour)
+    .find((h) => h.lowCloud < SOCKED_THRESHOLD);
+
+  return {
+    index,
+    meanLowCloud,
+    sunFraction,
+    pctSocked,
+    burnOffHour: cleared ? cleared.hour : null,
+    windowHours: n,
+  };
+}
+
 function stationDays(series: StationSeries): Map<string, StationDay> {
-  const byDate = new Map<string, typeof series.hours>();
+  const byDate = new Map<string, HourPoint[]>();
   for (const h of series.hours) {
-    if (h.hour < WINDOW_START || h.hour >= WINDOW_END) continue;
     const arr = byDate.get(h.date) ?? [];
     arr.push(h);
     byDate.set(h.date, arr);
@@ -51,38 +96,8 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
 
   const out = new Map<string, StationDay>();
   for (const [date, hours] of byDate) {
-    if (hours.length === 0) continue;
-    const n = hours.length;
-    const meanLowCloud = hours.reduce((s, h) => s + h.lowCloud, 0) / n;
-    const sunFraction = clamp(
-      hours.reduce((s, h) => s + h.sunshineSec, 0) / (n * 3600),
-      0,
-      1,
-    );
-    const sockedHours = hours.filter((h) => h.lowCloud >= SOCKED_THRESHOLD).length;
-    const pctSocked = (100 * sockedHours) / n;
-
-    const index = clamp(
-      WEIGHTS.lowCloud * meanLowCloud +
-        WEIGHTS.sunless * (1 - sunFraction) * 100 +
-        WEIGHTS.socked * pctSocked,
-    );
-
-    // First window hour the low cloud dropped below threshold = burn-off.
-    const cleared = hours
-      .slice()
-      .sort((a, b) => a.hour - b.hour)
-      .find((h) => h.lowCloud < SOCKED_THRESHOLD);
-
-    out.set(date, {
-      station: series.station,
-      index,
-      meanLowCloud,
-      sunFraction,
-      pctSocked,
-      burnOffHour: cleared ? cleared.hour : null,
-      windowHours: n,
-    });
+    const stats = windowIndex(hours);
+    if (stats) out.set(date, { station: series.station, ...stats });
   }
   return out;
 }
