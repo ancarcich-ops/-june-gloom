@@ -11,7 +11,7 @@ in low cloud each morning:
 - **🌞 The Big Dogs** score when the sun wins (the layer burns off).
 - **🌫️ The Gloom + Grant** score when the gloom holds.
 
-Every June day is a "game." Each morning we compute a **Gloom Index (0–100)** for
+Every June day is a "game." Across beach hours we compute a **Gloom Index (0–100)** for
 six LA & Orange County beaches from live weather data; the coastal average is the
 day's final score and decides the winner. The site shows a cumulative scoreboard,
 today's live game, a season ledger, per-city box score, and an index trend — plus
@@ -20,7 +20,7 @@ explaining the math.
 
 ## The Gloom Index (short version)
 
-Per beach, over the 6–11 AM marine-layer window:
+Per beach, over the 8 AM–3 PM beach-hours window:
 
 ```
 Index = 0.5 · meanLowCloud

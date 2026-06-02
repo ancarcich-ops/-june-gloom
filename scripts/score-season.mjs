@@ -8,8 +8,8 @@
 
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 
-const MORNING_START = 6;
-const MORNING_END = 12; // exclusive
+const WINDOW_START = 8;
+const WINDOW_END = 15; // exclusive (8 AM–3 PM beach-hours window)
 const SOCKED_THRESHOLD = 50;
 const WEIGHTS = { lowCloud: 0.5, sunless: 0.3, socked: 0.2 };
 const WIN_THRESHOLD = 50;
@@ -43,11 +43,11 @@ async function fetchArchive(year) {
 }
 
 function stationDayIndex(times, low, sun) {
-  // Group morning-window hours by date.
+  // Group window hours by date.
   const byDate = new Map();
   for (let k = 0; k < times.length; k++) {
     const hour = Number(times[k].slice(11, 13));
-    if (hour < MORNING_START || hour >= MORNING_END) continue;
+    if (hour < WINDOW_START || hour >= WINDOW_END) continue;
     const date = times[k].slice(0, 10);
     if (low[k] == null) continue;
     const arr = byDate.get(date) ?? [];
@@ -106,7 +106,7 @@ async function runYear(year) {
 
   // ---- Markdown report ----
   let md = `# June ${year} — replayed through the current Gloom Index methodology\n\n`;
-  md += `> Source: Open-Meteo archive API · 6 LA+OC beaches · 6 AM–noon window · `;
+  md += `> Source: Open-Meteo archive API · 6 LA+OC beaches · 8 AM–3 PM window · `;
   md += `weights ${WEIGHTS.lowCloud}/${WEIGHTS.sunless}/${WEIGHTS.socked} · win at ${WIN_THRESHOLD}\n\n`;
   md += `## Final score\n\n`;
   md += `| Team | Record (W–L) | Season points |\n|---|---|---|\n`;

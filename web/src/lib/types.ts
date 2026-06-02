@@ -28,10 +28,10 @@ export interface StationDay {
   station: Station;
   index: number; // 0..100 Gloom Index for this station/day
   meanLowCloud: number;
-  sunFraction: number; // 0..1 of morning that was sunny
-  pctSocked: number; // % of morning hours socked in
-  burnOffHour: number | null; // first morning hour it cleared, or null
-  morningHours: number; // how many morning hours had data
+  sunFraction: number; // 0..1 of the window that was sunny
+  pctSocked: number; // % of window hours socked in
+  burnOffHour: number | null; // first window hour it cleared, or null
+  windowHours: number; // how many window hours had data
 }
 
 export interface DayResult {

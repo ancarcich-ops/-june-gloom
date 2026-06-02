@@ -3,16 +3,16 @@ import {
   WEIGHTS,
   SOCKED_THRESHOLD,
   WIN_THRESHOLD,
-  MORNING_START,
-  MORNING_END,
+  WINDOW_START,
+  WINDOW_END,
   fmtHour,
 } from "../lib/gloom";
 import { STATIONS } from "../lib/openMeteo";
 import { TEAMS } from "../lib/teams";
 
 // A worked example computed with the real constants so the numbers are honest.
-const EX_LOW = [95, 92, 88, 70, 40, 20]; // 6–11 AM low-cloud %
-const EX_SUN = [0, 0, 0, 600, 2400, 3200]; // seconds of sun per hour
+const EX_LOW = [96, 92, 85, 70, 45, 30, 18]; // 8 AM–2 PM low-cloud %
+const EX_SUN = [0, 0, 200, 1800, 2900, 3300, 3500]; // seconds of sun per hour
 const exN = EX_LOW.length;
 const exMean = EX_LOW.reduce((a, b) => a + b, 0) / exN;
 const exSunFrac = EX_SUN.reduce((a, b) => a + b, 0) / (exN * 3600);
@@ -21,7 +21,7 @@ const exIndex =
   WEIGHTS.lowCloud * exMean +
   WEIGHTS.sunless * (1 - exSunFrac) * 100 +
   WEIGHTS.socked * exSocked;
-const exBurnHour = MORNING_START + EX_LOW.findIndex((v) => v < SOCKED_THRESHOLD);
+const exBurnHour = WINDOW_START + EX_LOW.findIndex((v) => v < SOCKED_THRESHOLD);
 
 function Section({
   title,
@@ -111,15 +111,18 @@ export default function Methodology() {
         </div>
       </Section>
 
-      <Section title="3. The morning window">
+      <Section title="3. The scoring window — beach hours">
         <p>
-          June Gloom is a "night & morning low clouds" phenomenon — the question
-          each day is whether it burns off. So we score the{" "}
+          June Gloom is a "night &amp; morning low clouds" phenomenon, and the
+          question that matters is whether it burns off in time to enjoy. So we
+          score <strong className="text-white/85">beach hours</strong>:{" "}
           <strong className="text-white/85">
-            {fmtHour(MORNING_START)}–{fmtHour(MORNING_END)}
-          </strong>{" "}
-          window. An hour counts as <em>socked in</em> when low-cloud cover is at
-          or above <strong className="text-white/85">{SOCKED_THRESHOLD}%</strong>.
+            {fmtHour(WINDOW_START)}–{fmtHour(WINDOW_END)}
+          </strong>
+          . Skipping the pre-dawn hours (which are almost always gray) gives the
+          sun a fair shot at the title. An hour counts as <em>socked in</em> when
+          low-cloud cover is at or above{" "}
+          <strong className="text-white/85">{SOCKED_THRESHOLD}%</strong>.
         </p>
       </Section>
 
@@ -141,21 +144,21 @@ export default function Methodology() {
           &nbsp;&nbsp;&nbsp;&nbsp;+ <span className="text-gloom-400">
             {WEIGHTS.socked}
           </span>{" "}
-          · pctMorningSocked
+          · pctWindowSocked
         </div>
         <ul className="ml-5 list-disc space-y-1">
           <li>
             <strong className="text-white/85">meanLowCloud</strong> — average
-            low-cloud % across the morning (the layer's thickness).
+            low-cloud % across the window (the layer's thickness).
           </li>
           <li>
             <strong className="text-white/85">sunFraction</strong> — share of the
-            morning that was actually sunny (0–1). We use{" "}
+            window that was actually sunny (0–1). We use{" "}
             <code>1 − sunFraction</code> so "no sun" pushes the index up.
           </li>
           <li>
-            <strong className="text-white/85">pctMorningSocked</strong> — % of
-            morning hours at or above the {SOCKED_THRESHOLD}% threshold (how
+            <strong className="text-white/85">pctWindowSocked</strong> — % of
+            window hours at or above the {SOCKED_THRESHOLD}% threshold (how
             stubborn the layer was).
           </li>
         </ul>
@@ -200,19 +203,20 @@ export default function Methodology() {
             finished days won by the same team.
           </li>
           <li>
-            Before noon, today's game is <strong className="text-white/85">live</strong>{" "}
-            (partly forecast) and counts toward points provisionally. The moment
-            the <strong className="text-white/85">{fmtHour(MORNING_END)}</strong>{" "}
-            window closes, every morning hour is observed, so the game goes{" "}
+            Before the window closes, today's game is{" "}
+            <strong className="text-white/85">live</strong> (partly forecast) and
+            counts toward points provisionally. The moment{" "}
+            <strong className="text-white/85">{fmtHour(WINDOW_END)}</strong> hits,
+            every window hour is observed, so the game goes{" "}
             <strong className="text-white/85">final</strong> and lands in the
             record.
           </li>
         </ul>
       </Section>
 
-      <Section title="7. Worked example — one beach, one morning">
+      <Section title="7. Worked example — one beach, one day">
         <p>
-          Say Santa Monica's {fmtHour(MORNING_START)}–{fmtHour(MORNING_END)} runs:
+          Say Santa Monica's {fmtHour(WINDOW_START)}–{fmtHour(WINDOW_END)} runs:
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
@@ -221,7 +225,7 @@ export default function Methodology() {
                 <th className="p-1.5">Hour</th>
                 {EX_LOW.map((_, i) => (
                   <th key={i} className="p-1.5">
-                    {fmtHour(MORNING_START + i)}
+                    {fmtHour(WINDOW_START + i)}
                   </th>
                 ))}
               </tr>
@@ -258,7 +262,7 @@ export default function Methodology() {
           </li>
           <li>
             pctMorningSocked = <span className="led">{exSocked.toFixed(1)}</span>{" "}
-            (4 of 6 hours)
+            (4 of {exN} hours)
           </li>
           <li>
             burn-off = first hour under {SOCKED_THRESHOLD}% ={" "}

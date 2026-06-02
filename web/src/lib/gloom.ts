@@ -12,10 +12,11 @@ import { laTodayISO, laHour, seasonYear } from "./openMeteo";
 // Tunable constants — the methodology page reads these so docs == reality.
 // --------------------------------------------------------------------------
 
-/** Marine-layer window: 6 AM through 11 AM local (the "night & morning low
- *  clouds" hours when the gloom either holds or burns off). */
-export const MORNING_START = 6;
-export const MORNING_END = 12; // exclusive
+/** Daytime "beach hours" window: 8 AM through 2 PM local (8 AM–3 PM span). This
+ *  skips the pre-dawn marine layer that's almost always gray and instead scores
+ *  the hours when the gloom either holds through the day or burns off. */
+export const WINDOW_START = 8;
+export const WINDOW_END = 15; // exclusive (window closes at 3 PM)
 
 /** Low-cloud cover (%) at or above which an hour counts as "socked in". */
 export const SOCKED_THRESHOLD = 50;
@@ -24,7 +25,7 @@ export const SOCKED_THRESHOLD = 50;
 export const WEIGHTS = {
   lowCloud: 0.5, // how thick the marine layer was
   sunless: 0.3, // how little sun actually reached the ground
-  socked: 0.2, // how much of the morning stayed socked in
+  socked: 0.2, // how much of the window stayed socked in
 } as const;
 
 /** Index at or above this = a Gloom win; below = a Big Dogs win. */
@@ -41,7 +42,7 @@ function clamp(n: number, lo = 0, hi = 100) {
 function stationDays(series: StationSeries): Map<string, StationDay> {
   const byDate = new Map<string, typeof series.hours>();
   for (const h of series.hours) {
-    if (h.hour < MORNING_START || h.hour >= MORNING_END) continue;
+    if (h.hour < WINDOW_START || h.hour >= WINDOW_END) continue;
     const arr = byDate.get(h.date) ?? [];
     arr.push(h);
     byDate.set(h.date, arr);
@@ -66,7 +67,7 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
         WEIGHTS.socked * pctSocked,
     );
 
-    // First morning hour the low cloud dropped below threshold = burn-off.
+    // First window hour the low cloud dropped below threshold = burn-off.
     const cleared = hours
       .slice()
       .sort((a, b) => a.hour - b.hour)
@@ -79,7 +80,7 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
       sunFraction,
       pctSocked,
       burnOffHour: cleared ? cleared.hour : null,
-      morningHours: n,
+      windowHours: n,
     });
   }
   return out;
@@ -88,9 +89,9 @@ function stationDays(series: StationSeries): Map<string, StationDay> {
 function statusFor(date: string, today: string, nowHour: number): DayStatus {
   if (date < today) return "final";
   if (date > today) return "upcoming";
-  // Today: the scoring window closes at noon (MORNING_END), so once it's past
-  // noon PT every morning hour is observed and the game is final.
-  return nowHour >= MORNING_END ? "final" : "live";
+  // Today: the scoring window closes at 3 PM (WINDOW_END), so once it's past
+  // 3 PM PT every window hour is observed and the game is final.
+  return nowHour >= WINDOW_END ? "final" : "live";
 }
 
 // --------------------------------------------------------------------------
