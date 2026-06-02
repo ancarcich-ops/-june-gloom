@@ -19,6 +19,12 @@ env/
 # Generated site (built fresh by GitHub Actions, deployed to Pages)
 docs/
 
+# Frontend (web/) build + deps
+web/node_modules/
+web/dist/
+web/.vite/
+*.tsbuildinfo
+
 # OS / editor
 .DS_Store
 .vscode/

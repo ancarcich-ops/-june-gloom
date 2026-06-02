@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(245, 158, 11, 0.12), transparent 60%),
+    radial-gradient(1000px 700px at 10% 10%, rgba(95, 119, 148, 0.22), transparent 55%),
+    linear-gradient(180deg, #0b1118 0%, #0d1620 55%, #0a0f15 100%);
+  background-attachment: fixed;
+  color: #e8eef5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sports-scoreboard LED digits */
+.led {
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+/* Thin scrollbar for the season grid */
+.thin-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 99px;
+}

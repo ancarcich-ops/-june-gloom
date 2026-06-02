@@ -1,68 +1,73 @@
-# June Gloom ☁️
+# June Gloom Bowl 🌞🌫️
 
 [![CI](https://github.com/ancarcich-ops/-june-gloom/actions/workflows/ci.yml/badge.svg)](https://github.com/ancarcich-ops/-june-gloom/actions/workflows/ci.yml)
 
-📊 **Live site:** https://ancarcich-ops.github.io/-june-gloom/ — a **live tracker**
-for the current June (updated daily) plus the historical charts, findings, and
-downloadable data. Rebuilt by GitHub Actions.
+🏆 **Live scoreboard:** https://ancarcich-ops.github.io/-june-gloom/
 
-Analyzing **June Gloom** — the persistent late-spring/early-summer marine layer
-that blankets coastal Southern California in low clouds and fog, often burning
-off by afternoon ("night and morning low clouds").
+A fun, animated **scoreboard** that tracks a season-long rivalry over Southern
+California's **June Gloom** — the late-spring marine layer that socks the coast
+in low cloud each morning:
 
-This project pulls historical weather observations, quantifies how "gloomy"
-each June really is, and visualizes trends across years and locations.
+- **🌞 The Big Dogs** score when the sun wins (the layer burns off).
+- **🌫️ The Gloom + Grant** score when the gloom holds.
 
-## Questions this project explores
+Every June day is a "game." Each morning we compute a **Gloom Index (0–100)** for
+six LA & Orange County beaches from live weather data; the coastal average is the
+day's final score and decides the winner. The site shows a cumulative scoreboard,
+today's live game, a season ledger, per-city box score, and an index trend — plus
+a full [**methodology**](https://ancarcich-ops.github.io/-june-gloom/) page
+explaining the math.
 
-- How many "gloomy" days does a typical June have at a given coastal station?
-- When does the marine layer typically burn off (cloud clearing time)?
-- Is June Gloom getting better or worse over the years?
-- How does the coast compare to a few miles inland?
+## The Gloom Index (short version)
 
-## Project layout
+Per beach, over the 6–11 AM marine-layer window:
 
 ```
-june-gloom/
-├── data/
-│   ├── raw/            # Untouched downloaded source data (git-ignored)
-│   └── processed/      # Cleaned, analysis-ready data (git-ignored)
-├── notebooks/          # Jupyter notebooks for exploration
-├── src/june_gloom/     # Reusable library code
-│   ├── fetch.py        # Download weather observations
-│   ├── analyze.py      # "Gloom" metrics & aggregations
-│   └── plots.py        # Charts
-├── tests/              # Unit tests
-├── requirements.txt
-└── README.md
+Index = 0.5 · meanLowCloud
+      + 0.3 · (1 − sunFraction) · 100
+      + 0.2 · pctMorningSocked
 ```
 
-## Getting started
+Index ≥ 50 → Gloom wins the day; below → Big Dogs. The six beaches are averaged
+into the official daily score. Full details, thresholds, and a worked example
+live on the in-app **How it works** page.
+
+## Tech
+
+- **Frontend** (`web/`): Vite + React + TypeScript + Tailwind CSS + Framer Motion.
+  Fetches live weather **client-side** from Open-Meteo (no server, no API key).
+- **Deploy**: GitHub Actions builds `web/` and publishes to GitHub Pages.
+- **Python library** (`src/june_gloom/`): the original historical analysis
+  toolkit (cloud-cover fetch + gloom metrics) with a pytest suite, still used for
+  notebook-based exploration.
+
+## Run the scoreboard locally
 
 ```bash
-# 1. Create and activate a virtual environment
+cd web
+npm install
+npm run dev        # open the printed localhost URL
+npm run build      # production build into web/dist
+```
+
+## Run the Python analysis (optional)
+
+```bash
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-
-# 2. Install dependencies
 pip install -r requirements.txt
-
-# 3. Launch Jupyter and open the starter notebook
 jupyter lab notebooks/01_explore_june_gloom.ipynb
 ```
 
-## Data sources
+## Data source
 
-- **NOAA NCEI** — Global Historical Climatology Network (GHCN-Daily) and
-  Local Climatological Data (LCD) for cloud cover, sky condition, and sunshine.
-  https://www.ncei.noaa.gov/
-- **Open-Meteo** — free weather API (cloud cover, no API key needed). The
-  *archive* endpoint feeds the historical view; the *forecast* endpoint (recent
-  actuals + short forecast) feeds the current-season live tracker.
-  https://open-meteo.com/en/docs/historical-weather-api
+- **Open-Meteo** — free weather API, no API key. The scoreboard uses the
+  *forecast* endpoint (recent hourly observations + short forecast) for live
+  low-cloud and sunshine data; the Python library can also use the *archive*
+  endpoint for multi-year history. https://open-meteo.com/
 
-Candidate SoCal stations: LAX, Long Beach, Santa Monica, San Diego (Lindbergh),
-Santa Barbara, Oceanside.
+Scoreboard panel (LA + Orange County beaches): Santa Monica, Manhattan Beach,
+Long Beach, Huntington Beach, Newport Beach, Laguna Beach.
 
 ## License
 
