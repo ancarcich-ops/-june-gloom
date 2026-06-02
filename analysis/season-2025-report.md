@@ -1,51 +1,51 @@
 # June 2025 — replayed through the current Gloom Index methodology
 
-> Source: Open-Meteo archive API · 6 LA+OC beaches · 6 AM–noon window · weights 0.5/0.3/0.2 · win at 50
+> Source: Open-Meteo archive API · 6 LA+OC beaches · 8 AM–3 PM window · weights 0.5/0.3/0.2 · win at 50
 
 ## Final score
 
 | Team | Record (W–L) | Season points |
 |---|---|---|
-| 🌞 Big Dogs | 9–21 | **1136** |
-| 🌫️ The Gloom + Grant | 21–9 | **1864** |
+| 🌞 Big Dogs | 25–5 | **1978** |
+| 🌫️ The Gloom + Grant | 5–25 | **1022** |
 
-**Season winner: THE GLOOM + GRANT 🌫️** by 728 points over 30 games.
+**Season winner: THE BIG DOGS 🌞** by 956 points over 30 games.
 
-Biggest blowout: June 5 — Gloom 94–6.
+Biggest blowout: June 22 — Dogs 96–4.
 
 ## Daily box score
 
 | Date | Gloom Index | Score (G–D) | Winner |
 |---|---|---|---|
-| Jun 1 | 15.3 | 15–85 | 🌞 Dogs |
-| Jun 2 | 63.7 | 64–36 | 🌫️ Gloom |
-| Jun 3 | 74.6 | 75–25 | 🌫️ Gloom |
-| Jun 4 | 91.7 | 92–8 | 🌫️ Gloom |
-| Jun 5 | 94.2 | 94–6 | 🌫️ Gloom |
-| Jun 6 | 82.3 | 82–18 | 🌫️ Gloom |
-| Jun 7 | 76.6 | 77–23 | 🌫️ Gloom |
-| Jun 8 | 93.7 | 94–6 | 🌫️ Gloom |
-| Jun 9 | 89.2 | 89–11 | 🌫️ Gloom |
-| Jun 10 | 80.5 | 81–19 | 🌫️ Gloom |
-| Jun 11 | 67.2 | 67–33 | 🌫️ Gloom |
-| Jun 12 | 79.6 | 80–20 | 🌫️ Gloom |
-| Jun 13 | 64.1 | 64–36 | 🌫️ Gloom |
-| Jun 14 | 76.3 | 76–24 | 🌫️ Gloom |
-| Jun 15 | 57.5 | 57–43 | 🌫️ Gloom |
-| Jun 16 | 37.8 | 38–62 | 🌞 Dogs |
-| Jun 17 | 43.8 | 44–56 | 🌞 Dogs |
-| Jun 18 | 37.8 | 38–62 | 🌞 Dogs |
-| Jun 19 | 80.1 | 80–20 | 🌫️ Gloom |
-| Jun 20 | 66.3 | 66–34 | 🌫️ Gloom |
-| Jun 21 | 75.7 | 76–24 | 🌫️ Gloom |
-| Jun 22 | 16.5 | 17–83 | 🌞 Dogs |
-| Jun 23 | 48.6 | 49–51 | 🌞 Dogs |
-| Jun 24 | 58.9 | 59–41 | 🌫️ Gloom |
-| Jun 25 | 64.8 | 65–35 | 🌫️ Gloom |
-| Jun 26 | 80.8 | 81–19 | 🌫️ Gloom |
-| Jun 27 | 57.7 | 58–42 | 🌫️ Gloom |
-| Jun 28 | 32.6 | 33–67 | 🌞 Dogs |
-| Jun 29 | 25.5 | 25–75 | 🌞 Dogs |
-| Jun 30 | 27.8 | 28–72 | 🌞 Dogs |
+| Jun 1 | 14.1 | 14–86 | 🌞 Dogs |
+| Jun 2 | 41.9 | 42–58 | 🌞 Dogs |
+| Jun 3 | 39.9 | 40–60 | 🌞 Dogs |
+| Jun 4 | 70.2 | 70–30 | 🌫️ Gloom |
+| Jun 5 | 69.3 | 69–31 | 🌫️ Gloom |
+| Jun 6 | 56.9 | 57–43 | 🌫️ Gloom |
+| Jun 7 | 43.0 | 43–57 | 🌞 Dogs |
+| Jun 8 | 57.1 | 57–43 | 🌫️ Gloom |
+| Jun 9 | 59.4 | 59–41 | 🌫️ Gloom |
+| Jun 10 | 46.4 | 46–54 | 🌞 Dogs |
+| Jun 11 | 35.1 | 35–65 | 🌞 Dogs |
+| Jun 12 | 43.1 | 43–57 | 🌞 Dogs |
+| Jun 13 | 29.3 | 29–71 | 🌞 Dogs |
+| Jun 14 | 39.9 | 40–60 | 🌞 Dogs |
+| Jun 15 | 24.7 | 25–75 | 🌞 Dogs |
+| Jun 16 | 14.1 | 14–86 | 🌞 Dogs |
+| Jun 17 | 15.7 | 16–84 | 🌞 Dogs |
+| Jun 18 | 14.8 | 15–85 | 🌞 Dogs |
+| Jun 19 | 43.0 | 43–57 | 🌞 Dogs |
+| Jun 20 | 31.5 | 31–69 | 🌞 Dogs |
+| Jun 21 | 43.4 | 43–57 | 🌞 Dogs |
+| Jun 22 | 4.1 | 4–96 | 🌞 Dogs |
+| Jun 23 | 26.8 | 27–73 | 🌞 Dogs |
+| Jun 24 | 32.8 | 33–67 | 🌞 Dogs |
+| Jun 25 | 31.5 | 31–69 | 🌞 Dogs |
+| Jun 26 | 43.4 | 43–57 | 🌞 Dogs |
+| Jun 27 | 27.3 | 27–73 | 🌞 Dogs |
+| Jun 28 | 8.5 | 8–92 | 🌞 Dogs |
+| Jun 29 | 8.4 | 8–92 | 🌞 Dogs |
+| Jun 30 | 10.1 | 10–90 | 🌞 Dogs |
 
-_Generated 2026-06-02T01:33:42.983Z._
+_Generated 2026-06-02T01:53:24.215Z._
