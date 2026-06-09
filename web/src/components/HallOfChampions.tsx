@@ -20,20 +20,28 @@ const TITLES = seasons.reduce(
   { d: 0, g: 0 },
 );
 
-function MiniSpark({ data, color }: { data: number[]; color: string }) {
-  const W = 100, H = 26, pad = 2;
-  const min = Math.min(...data), max = Math.max(...data);
-  const rng = max - min || 1;
-  const pts = data
-    .map((v, i) => {
-      const x = pad + (i / (data.length - 1)) * (W - pad * 2);
-      const y = pad + (1 - (v - min) / rng) * (H - pad * 2);
-      return `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(" ");
+// Fixed 0–100 scale + a 50 midline, with the area shaded gloom (above) vs dogs
+// (below) so you can read who controlled the season at a glance.
+function MiniSpark({ data, uid }: { data: number[]; uid: string }) {
+  const W = 100, H = 30, pad = 2;
+  const n = data.length;
+  const x = (i: number) => pad + (i / (n - 1)) * (W - 2 * pad);
+  const y = (v: number) => pad + (1 - v / 100) * (H - 2 * pad);
+  const midY = y(50);
+  const line = data.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const areaDown = `${line} L ${x(n - 1).toFixed(1)} ${H} L ${x(0).toFixed(1)} ${H} Z`;
+  const areaUp = `${line} L ${x(n - 1).toFixed(1)} 0 L ${x(0).toFixed(1)} 0 Z`;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 26 }} preserveAspectRatio="none">
-      <path d={pts} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 30 }} preserveAspectRatio="none">
+      <defs>
+        <clipPath id={`up-${uid}`}><rect x="0" y="0" width={W} height={midY} /></clipPath>
+        <clipPath id={`dn-${uid}`}><rect x="0" y={midY} width={W} height={H - midY} /></clipPath>
+      </defs>
+      {/* gloom shading above the 50-line, dogs shading below */}
+      <path d={areaDown} fill={TEAMS.gloom.c3} fillOpacity="0.34" clipPath={`url(#up-${uid})`} />
+      <path d={areaUp} fill={TEAMS.dogs.c3} fillOpacity="0.34" clipPath={`url(#dn-${uid})`} />
+      <line x1="0" x2={W} y1={midY} y2={midY} stroke="var(--ink-faint)" strokeWidth="0.5" strokeDasharray="2 2" />
+      <path d={line} fill="none" stroke="var(--ink)" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
@@ -84,7 +92,7 @@ export default function HallOfChampions() {
               </div>
               <div className="hc-champ" style={{ color: t.c3 }}>{t.short}</div>
               <div className="hc-rec">{champ === "dogs" ? `${s.dogWins}–${s.gloomWins}` : `${s.gloomWins}–${s.dogWins}`}</div>
-              <MiniSpark data={s.scores} color={t.c3} />
+              <MiniSpark data={s.scores} uid={String(s.year)} />
               <div className="hc-mvp">
                 Biggest blowout<br />
                 <b><span style={{ color: bt.c3 }}>{bt.short}</span> {s.biggest.win}–{s.biggest.lose} · Jun {Number(s.biggest.date.slice(8))}</b>
@@ -92,6 +100,12 @@ export default function HallOfChampions() {
             </div>
           );
         })}
+      </div>
+
+      <div style={{ fontSize: 11.5, color: "var(--ink-faint)", marginTop: 14, lineHeight: 1.5 }}>
+        Each spark is that June's daily Gloom Index on a fixed 0–100 scale ·{" "}
+        <span style={{ color: TEAMS.gloom.c3, fontWeight: 600 }}>above the line = Gloom days</span> ·{" "}
+        <span style={{ color: TEAMS.dogs.c3, fontWeight: 600 }}>below = Dogs days</span>
       </div>
 
       <div className="hc-era">
