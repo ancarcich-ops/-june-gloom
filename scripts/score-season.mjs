@@ -11,7 +11,7 @@ import { mkdir, writeFile, readFile } from "node:fs/promises";
 const WINDOW_START = 7;
 const WINDOW_END = 12; // exclusive (7 AM–noon burn-off window)
 const SOCKED_THRESHOLD = 50;
-const WEIGHTS = { lowCloud: 0.5, sunless: 0.3, socked: 0.2 };
+const WEIGHTS = { lowCloud: 0.4, sunless: 0.5, socked: 0.1 };
 const WIN_THRESHOLD = 50;
 
 const STATIONS = [

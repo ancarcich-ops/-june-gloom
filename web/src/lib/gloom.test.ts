@@ -53,8 +53,12 @@ describe("windowIndex — the worked example from the methodology page", () => {
     expect(s.sunFraction).toBeCloseTo(6200 / 18000, 6);
     expect(s.pctSocked).toBeCloseTo(80, 6);
   });
-  it("computes the blended index", () => {
-    expect(s.index).toBeCloseTo(70.667, 2);
+  it("computes the blended index from the current weights", () => {
+    const expected =
+      WEIGHTS.lowCloud * 70 +
+      WEIGHTS.sunless * (1 - 6200 / 18000) * 100 +
+      WEIGHTS.socked * 80;
+    expect(s.index).toBeCloseTo(expected, 5);
   });
   it("reports burn-off at the first sub-threshold hour", () => {
     expect(s.burnOffHour).toBe(11);

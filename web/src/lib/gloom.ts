@@ -23,11 +23,13 @@ export const WINDOW_END = 12; // exclusive (window closes at noon)
 /** Low-cloud cover (%) at or above which an hour counts as "socked in". */
 export const SOCKED_THRESHOLD = 50;
 
-/** Weights for the three components of the daily Gloom Index (sum to 1). */
+/** Weights for the three components of the daily Gloom Index (sum to 1).
+ *  A1 rebalance: lead with actual sunshine, so "cloudy but the sun's out"
+ *  mornings tip toward the Dogs instead of flattening to ~100. */
 export const WEIGHTS = {
-  lowCloud: 0.5, // how thick the marine layer was
-  sunless: 0.3, // how little sun actually reached the ground
-  socked: 0.2, // how much of the window stayed socked in
+  lowCloud: 0.4, // how thick the marine layer was
+  sunless: 0.5, // how little sun actually reached the ground
+  socked: 0.1, // how much of the window stayed socked in
 } as const;
 
 /** Index at or above this = a Gloom win; below = a Big Dogs win. */
