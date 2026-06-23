@@ -325,3 +325,42 @@ body {
   .mt-step { padding: 0; }
   .mt-step:not(:last-child)::after { display: none; }
 }
+
+/* ── Password gate ─────────────────────────────────────────────────────
+   Renders above .jg-root, so it can't inherit the mood vars — it carries
+   its own (dawn-fog) palette so the reused .jg-card / .jg-pill still work. */
+.jg-gate {
+  --ink: #f4f7fb; --ink-soft: #aeb9cb; --ink-faint: #7c8aa0;
+  --surface: rgba(20,28,44,0.72); --surface2: rgba(28,38,58,0.9);
+  --border: rgba(255,255,255,0.12); --lead: #ffd66e;
+  --r-lg: 22px;
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: 22px; color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #243049 0%, transparent 60%),
+    linear-gradient(180deg, #0e1626 0%, #0b1120 100%);
+}
+.jg-gate-card {
+  width: 100%; max-width: 380px; padding: 32px 30px; text-align: center;
+}
+.jg-gate-input {
+  width: 100%; margin-top: 4px; padding: 12px 14px;
+  font: inherit; font-size: 15px; color: var(--ink);
+  background: rgba(8,13,22,0.55);
+  border: 1px solid var(--border); border-radius: 12px;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.jg-gate-input::placeholder { color: var(--ink-faint); }
+.jg-gate-input:focus {
+  border-color: var(--lead);
+  box-shadow: 0 0 0 3px rgba(255,214,110,0.18);
+}
+.jg-gate-input[aria-invalid="true"] {
+  border-color: #e0392b; box-shadow: 0 0 0 3px rgba(224,57,43,0.18);
+}
+.jg-gate-btn {
+  width: 100%; justify-content: center; margin-top: 18px;
+  padding: 11px 12px; cursor: pointer; font-size: 14px;
+  color: #1a1206; border: none; background: var(--lead);
+}
